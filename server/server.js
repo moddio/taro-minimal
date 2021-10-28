@@ -246,6 +246,7 @@ var Server = IgeClass.extend({
 					gameSlug: ige.game.data.defaultData.gameSlug,
 					videoChatEnabled: videoChatEnabled
 				};
+				
 				const options = {
 					isAuthenticated: false,
 					env: process.env.ENV,
@@ -304,6 +305,9 @@ var Server = IgeClass.extend({
 				};
 				
 				if (process.env.ENV == 'prod') {
+					if (process.env.SSL == 'on')
+						return res.render('index-dist-ssl.ejs', options);
+					
 					return res.render('index-dist.ejs', options);
 				} else {
 					return res.render('index.ejs', options);

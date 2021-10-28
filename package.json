@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "node server/ige.js -g ./src --inspect",
     "prod": "cross-env ENV=prod node server/ige.js -g ./src",
+    "prod:SSL": "cross-env ENV=prod SSL=on node server/ige.js -g ./src",
     "build": "node server/ige.js -deploy ./src -to ./src",
     "dev:lint": "eslint . --fix"    
   },

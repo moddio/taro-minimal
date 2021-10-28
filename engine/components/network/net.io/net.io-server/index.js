@@ -653,29 +653,27 @@ NetIo.Server = NetIo.EventingClass.extend({
 		socket._encode = self._encode;
 		socket._decode = self._decode;
 		socket._remoteAddress = ws._socket.remoteAddress;
-		socket._fromPingService = request.headers[PING_SERVICE_HEADER];
 
 		// extracting user from token and adding it in _token.
 		// if token doesnot exist in request close the socket.
 
-		if (!socket._fromPingService) {
-			if (request.url.indexOf('/?token=') === -1) {
-				socket.close('Unauthorized request');
-				return;
-			}
-
-			var token = request.url && request.url.replace('/?token=', '');
-			try {
-				var decodedToken = jwt.verify(token, 'k=9PE%C&Ammu}<K');
-				socket._token = {
-					userId: decodedToken.userId
-				};
-			} catch (e) {
-				socket._token = {
-					userId: ''
-				};
-			}
+		if (request.url.indexOf('/?token=') === -1) {
+			socket.close('Unauthorized request');
+			return;
 		}
+
+		var token = request.url && request.url.replace('/?token=', '');
+		try {
+			var decodedToken = jwt.verify(token, 'k=9PE%C&Ammu}<K');
+			socket._token = {
+				userId: decodedToken.userId
+			};
+		} catch (e) {
+			socket._token = {
+				userId: ''
+			};
+		}
+
 		// Give the socket a unique ID
 		socket.id = self.newIdHex();
 		// Add the socket to the internal lookups
@@ -685,17 +683,16 @@ NetIo.Server = NetIo.EventingClass.extend({
 		// Register a listener so that if the socket disconnects,
 		// we can remove it from the active socket lookups
 		socket.on('disconnect', function (response) {
-			if (!socket._fromPingService) {
-				if (response.code !== 1000 && response.code !== 1001) {
-					console.log('client disconnected. code:', response.code, ' reason:', response.reason);
-					// console.trace()
+			if (response.code !== 1000 && response.code !== 1001) {
+				console.log('client disconnected. code:', response.code, ' reason:', response.reason);
+				// console.trace()
 
-					// global.rollbar.error("client got disconnected involuntarily reason: " + response, {
-					//     reason: response,
-					//     ip: process.env.IP
-					// })
-				}
+				// global.rollbar.error("client got disconnected involuntarily reason: " + response, {
+				//     reason: response,
+				//     ip: process.env.IP
+				// })
 			}
+			
 			var index = self._sockets.indexOf(socket);
 			if (index > -1) {
 				// Remove the socket from the array

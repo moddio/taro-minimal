@@ -34,14 +34,7 @@ var Client = IgeClass.extend({
         self.tickAndUpdateData = {};
 
         pathArray = window.location.href.split('/');
-
-        $("#coin-icon").append(
-            $("<img/>", {
-                src: self.host + "/assets/images/coin.png",
-                width: 32,
-                height: 32
-            }))
-
+       
         self.igeEngineStarted = $.Deferred();
         self.mapLoaded = $.Deferred();
         self.mapRenderEnabled = true;
@@ -63,15 +56,21 @@ var Client = IgeClass.extend({
         self.eventLog = [];
 
         self.fontTexture = new IgeFontSheet('/assets/fonts/verdana_12pt.png');
+
+        if (SSL) {
+            var protocol = 'wss://'
+        } else {
+            var protocol = 'ws://'
+        }
         self.servers = [
             {
-                ip: '127.0.0.1',
+                ip: window.location.hostname,
                 port: 2001,
                 playerCount: 0,
                 maxPlayers: 32,
                 acceptingPlayers: true,
                 gameId: gameId,
-                url: 'ws://localhost:2001'
+                url: protocol+window.location.hostname+':2001'
             }
         ];
 

@@ -93,15 +93,6 @@ NetIo.Client = NetIo.EventingClass.extend({
 		// Set the state to connecting
 		this._state = 1;
 
-		/*
-// Replace http:// with ws://
-		if (window.location.protocol == 'https:'){
-				url = url.replace('http://', 'wss://');
-		} else {
-				url = url.replace('http://', 'ws://');
-		}
-		*/
-
 		// Create new websocket to the url
 		this._socket = new WebSocket(`${url}?token=${localStorage.getItem('token')}`, 'netio1');
 

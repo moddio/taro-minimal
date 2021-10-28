@@ -546,7 +546,10 @@ NetIo.Server = NetIo.EventingClass.extend({
 	start: function (port, callback) {
 		var self = this;
 		this._port = port;
-		var secure = process.env.SSL; // to turn on/off https
+		var secure = false; // to turn on/off https
+		if (process.env.ENV == 'prod') {
+			secure = true 
+		}; 
 		
 		// http
 		this._httpServer = this._http.createServer(function (request, response) {

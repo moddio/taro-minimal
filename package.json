@@ -3,18 +3,12 @@
   "main": "server/ige.js",
   "version": "1.0.0",
   "scripts": {
-    "server": "cross-env ENV=standalone node server/ige.js -g ./src",
-    "server:prod": "node server/ige.js -g ./src",
-    "server:dev": "cross-env ENV=local node server/ige.js -g ./src",
-    "server:remote": "cross-env ENV=standalone-remote node server/ige.js -g ./src",
-    "build": "cross-env TEST=true node server/ige.js -deploy ./src -to ../be/assets",
-    "build:gs": "cross-env TEST=true node server/ige.js -deploy ./src -to ../../be/assets",
-    "build:git": "cross-env TEST=true node server/ige.js -deploy ./src -to ./build",
-    "debug": "cross-env ENV=standalone node --inspect server/ige.js -g ./src",
+    "server": "cross-env node server/ige.js -g ./src",
+    "build": "cross-env node server/ige.js -deploy ./src -to ./src",
+    "debug": "cross-env --inspect server/ige.js -g ./src",
     "dev:lint": "eslint . --fix"
   },
   "dependencies": {
-    "@clusterws/cws": "^3.0.0",
     "bad-words": "^3.0.4",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.19.0",

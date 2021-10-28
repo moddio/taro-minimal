@@ -149,45 +149,9 @@ var Server = IgeClass.extend({
 		// for debugging reasons
 		global.isServer = ige.isServer;
 
-		if (typeof HttpComponent != 'undefined') {
-			ige.addComponent(HttpComponent);
-		}
-		console.log('cluster.isMaster', cluster.isMaster);
-		if (cluster.isMaster) {
-			if (process.env.ENV === 'standalone') {
-				self.gameId = process.env.npm_config_game;
-				self.ip = '127.0.0.1';
-				self.startServer();
-				self.start();
-				self.startGame();
-			} else if (typeof ClusterServerComponent != 'undefined') {
-				ige.addComponent(ClusterServerComponent);
-			}
-		} else {
-			if (typeof ClusterClientComponent != 'undefined') {
-				ige.addComponent(ClusterClientComponent); // backend component will retrieve "start" command from BE
-			}
-
-			// if production, then get ip first, and then start
-			if (['production', 'staging', 'standalone-remote'].includes(ige.env)) {
-				console.log('getting IP address');
-				publicIp.v4().then(ip => { // get public ip of server
-					self.ip = ip;
-					self.start();
-				});
-			} else // use 127.0.0.1 if dev env
-			{
-				self.ip = '127.0.0.1';
-				self.start();
-			}
-		}
-
-		// periodicaly update user coins to db for inapp purchase
-		setInterval(function () {
-			if (Object.keys(self.coinUpdate || {}).length > 0) {
-				self.postConsumeCoinsForUsers();
-			}
-		}, 10000);
+		self.startServer();
+		self.start();
+		self.startGame();
 	},
 
 	// start server
@@ -273,72 +237,77 @@ var Server = IgeClass.extend({
 		app.use('/assets', express.static(path.resolve('./assets/'), { cacheControl: 7 * 24 * 60 * 60 * 1000 }));
 
 		app.get('/', (req, res) => {
-			const videoChatEnabled = ige.game.videoChatEnabled && req.protocol == 'https' ? ige.game.videoChatEnabled : false;
-			const game = {
-				_id: global.standaloneGame.defaultData._id,
-				title: global.standaloneGame.defaultData.title,
-				tier: global.standaloneGame.defaultData.tier,
-				gameSlug: global.standaloneGame.defaultData.gameSlug,
-				videoChatEnabled: videoChatEnabled
-			};
-			const options = {
-				isAuthenticated: false,
-				env: process.env.ENV,
-				gameId: process.env.npm_config_game,
-				user: {},
-				isOpenedFromIframe: false,
-				gameSlug: game.gameSlug,
-				referAccessDenied: true,
-				ads: false,
-				showSideBar: false,
-				gameDetails: {
-					name: game.title,
-					tier: game.tier,
-					gameSlug: game.gameSlug,
-					videoChatEnabled: game.videoChatEnabled
-				},
-				highScores: null,
-				hostedGames: null,
-				currentUserScore: null,
-				err: undefined,
-				selectedServer: null,
-				servers: [{
-					ip: '127.0.0.1',
-					port: 2001,
-					playerCount: 0,
-					maxPlayers: 32,
-					acceptingPlayers: true
-				}],
-				createdBy: '',
-				menudiv: false,
-				gameTitle: game.title,
-				currentUserPresentInHighscore: false,
-				discordLink: null,
-				facebookLink: null,
-				twitterLink: null,
-				youtubeLink: null,
-				androidLink: null,
-				iosLink: null,
-				share: {
-					url: ''
-				},
-				domain: req.get('host'),
-				version: Math.floor((Math.random() * 10000000) + 1),
-				constants: {
-					appName: 'Modd.io   ',
-					appUrl: 'http://www.modd.io/',
-					noAds: true,
-					assetsProvider: ''
-				},
-				purchasables: null,
-				timers: {
-					smallChest: 0,
-					bigChest: 0
-				},
-				analyticsUrl: '/'
-			};
+			if (ige.game) {
+				const videoChatEnabled = ige.game.videoChatEnabled && req.protocol == 'https' ? ige.game.videoChatEnabled : false;
 
-			return res.render('index.ejs', options);
+				const game = {
+					_id: ige.game.data.defaultData._id,
+					title: ige.game.data.defaultData.title,
+					tier: ige.game.data.defaultData.tier,
+					gameSlug: ige.game.data.defaultData.gameSlug,
+					videoChatEnabled: videoChatEnabled
+				};
+				const options = {
+					isAuthenticated: false,
+					env: process.env.ENV,
+					gameId: process.env.npm_config_game,
+					user: {},
+					isOpenedFromIframe: false,
+					gameSlug: game.gameSlug,
+					referAccessDenied: true,
+					ads: false,
+					showSideBar: false,
+					gameDetails: {
+						name: game.title,
+						tier: game.tier,
+						gameSlug: game.gameSlug,
+						videoChatEnabled: game.videoChatEnabled
+					},
+					highScores: null,
+					hostedGames: null,
+					currentUserScore: null,
+					err: undefined,
+					selectedServer: null,
+					servers: [{
+						ip: '127.0.0.1',
+						port: 2001,
+						playerCount: 0,
+						maxPlayers: 32,
+						acceptingPlayers: true
+					}],
+					createdBy: '',
+					menudiv: false,
+					gameTitle: game.title,
+					currentUserPresentInHighscore: false,
+					discordLink: null,
+					facebookLink: null,
+					twitterLink: null,
+					youtubeLink: null,
+					androidLink: null,
+					iosLink: null,
+					share: {
+						url: ''
+					},
+					domain: req.get('host'),
+					version: Math.floor((Math.random() * 10000000) + 1),
+					constants: {
+						appName: 'Modd.io   ',
+						appUrl: 'http://www.modd.io/',
+						noAds: true,
+						assetsProvider: ''
+					},
+					purchasables: null,
+					timers: {
+						smallChest: 0,
+						bigChest: 0
+					},
+					analyticsUrl: '/'
+				};
+	
+				return res.render('index.ejs', options);
+			}
+			
+			
 		});
 		app.listen(port, () => console.log(`MC listening on port ${port}!`));
 	},
@@ -424,7 +393,6 @@ var Server = IgeClass.extend({
 				ige.game.data = game.data;
 				ige.game.cspEnabled = !!ige.game.data.defaultData.clientSidePredictionEnabled;
 
-				global.standaloneGame = game.data;
 				var baseTilesize = 64;
 
 				// I'm assuming that both tilewidth and tileheight have same value

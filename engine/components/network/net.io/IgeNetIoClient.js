@@ -34,121 +34,30 @@ var IgeNetIoClient = {
 			this.artificialDelay = 0;
 			this.lagVariance = 0;
 
-			var self = this;
-			var gameId = ige.client.servers[0].gameId;
-
+			var self = this;			
 			self._startCallback = callback;
 
 			var sortedServers = [server];
-			var ignoreServerIds = [server.id];
-
-			while (server = ige.client.getBestServer(ignoreServerIds)) {
-				ignoreServerIds.push(server.id);
-				sortedServers.push(server);
-			}
-
+			
 			sortedServers.reduce(function (p, server) {
 				var defer = $.Deferred();
 
 				p.then(function () {
 					// console.log(server, self._state);
 					// if client's is not connected yet
-					if (self._state < 2) {
-						if (window.isStandalone) {
-							console.log('connecting to a standalone server');
-							url = `ws://${window.location.hostname}:2001`;
-						} else {
-							url = server.url;
-						}
+					url = server.url;
+					
+					window.connectedServer = server;
 
-						self._url = url;
-
-						var msg = `Connecting to net.io server at "${self._url}"...`;
-
-						self.log(msg);
-						console.log(msg);
-
-						window.connectedServer = server;
-
-						if (typeof (WebSocket) !== 'undefined') {
-							self.connectToGS(url)
-								.done(function () {
-									window.activatePlayGame = true;
-									if (gameId && typeof analyticsUrl != 'undefined' && analyticsUrl) {
-										$.post(`${analyticsUrl}api/game-report/game-access/${gameId}/gs-connected`)
-											.then(function () { }, function (xhr, status, error) {
-												$.post('/api/log', {
-													event: 'gs-connected',
-													game: gameId,
-													status: xhr.status,
-													text: xhr.statusText
-												});
-											});
-									}
-									defer.resolve();
-								})
-								.fail(function (err) {
-									console.log('connection failed, retrying...', err || '');
-									defer.resolve();
-								});
-						} else {
-							defer.reject('websockets are not available');
-						}
+					if (typeof (WebSocket) !== 'undefined') {
+						self.connectToGS(url)							
 					} else {
-						defer.resolve();
+						defer.reject('websockets are not available');
 					}
 				});
-
+				
 				return defer;
 			}, $.when())
-				.done(function () {
-					// we have gone through every possible server
-					// and still client's not connected properly
-					console.log('final stage', self._state);
-					if (self._state < 3) {
-						console.log('disconnecting from the server');
-						self._state = 0; // Disconnected
-						self._onDisconnectFromServer.apply(self, arguments);
-
-						if (gameId && typeof analyticsUrl != undefined) {
-							$.post(`${analyticsUrl}api/game-report/game-access/${gameId}/could-not-connect`)
-								.fail(function (xhr) {
-									$.post('/api/log', {
-										event: 'could-not-connect',
-										game: gameId,
-										status: xhr.status,
-										text: xhr.statusText
-									});
-								});
-						}
-
-						if ($('#menu-wrapper').is(':visible')) {
-							$('#play-game-button .content').addClass('bg-danger');
-							$('#play-game-button .content').html(
-								'<i class=\'fa fa-group pr-3\'></i>' +
-								'<div class="p-1">' +
-								'<div>' +
-								'<span>Connection Failed</span>' +
-								'</div>' +
-								'<div>' +
-								'<small style=\'font-size: 10px;\'>Please select a different server</small>' +
-								'</div>' +
-								'</div>');
-							$('#play-game-button').prop('disabled', false);
-							console.log(ige.client.eventLog);
-							window.activatePlayGame = true;
-						} else {
-							ige.menuUi.onDisconnectFromServer('igeNetIoClient #143');
-						}
-					}
-				})
-				.fail(function (error) {
-					$.post('/api/log', {
-						event: 'could-not-connect',
-						game: gameId,
-						text: error.toString()
-					});
-				});
 		}
 	},
 

@@ -90,16 +90,11 @@ NetIo.Client = NetIo.EventingClass.extend({
 		this.log(`Connecting to server at ${url}`);
 		var self = this;
 
-		// Set the state to connecting
-		this._state = 1;
-
 		// Create new websocket to the url
 		this._socket = new WebSocket(`${url}?token=${localStorage.getItem('token')}`, 'netio1');
 
 		// Setup event listeners
-		this._socket.onopen = function () { self._onOpen.apply(self, arguments); };
 		this._socket.onmessage = function () { self._onData.apply(self, arguments); };
-		this._socket.onclose = function () { self._onClose.apply(self, arguments); };
 		this._socket.onerror = function () { self._onError.apply(self, arguments); };
 	},
 
@@ -137,26 +132,6 @@ NetIo.Client = NetIo.EventingClass.extend({
 		} else {
 			this.disconnect();
 		}
-	},
-
-	_onOpen: function (event) {
-		var url = event.target.url;
-		var urlWithoutProtocol = url.split('://')[1];
-		var serverDomain = urlWithoutProtocol.split('/')[0];
-		var serverName = serverDomain.split(':')[0];
-
-		$.ajax({
-			url: '/socket-error-count',
-			dataType: 'json',
-			type: 'POST',
-			data: {
-				status: true,
-				server: serverName,
-				tier: window.tier
-			}
-		});
-
-		this._state = 2;
 	},
 
 	_onData: function (data) {
@@ -206,8 +181,6 @@ NetIo.Client = NetIo.EventingClass.extend({
 					this.id = packet.data;
 
 					// Now we have an id, set the state to connected
-					this._state = 3;
-
 					// Emit the connect event
 					this.emit('connect', this.id);
 					break;
@@ -222,90 +195,6 @@ NetIo.Client = NetIo.EventingClass.extend({
 			// The packet is normal data
 			this.emit('message', [packet]);
 		}
-	},
-
-	_onClose: function (event) {
-		var wasClean = event.wasClean;
-		var reason = event.reason;
-		var code = event.code;
-
-		console.log('close event', event, { state: this._state, reason: this._disconnectReason });
-
-		if (code === 1006) {
-			var url = event.target.url;
-			var urlWithoutProtocol = url.split('://')[1];
-			var serverDomain = urlWithoutProtocol.split('/')[0];
-
-			$.ajax({
-				url: '/socket-error-count',
-				dataType: 'json',
-				type: 'POST',
-				data: {
-					status: false,
-					server: serverDomain,
-					tier: window.tier
-				}
-			});
-		}
-		// if (code === 1006) {
-		// 	console.log('experienced issue 1006');
-		// 	var baseUrl = location.host + location.pathname;
-		// 	var queryString = '?serverId=' + window.connectedServer.id + '&joinGame=true&redirected=' + location.protocol;
-
-		// 	if (baseUrl[baseUrl.length - 1] === '/') {
-		// 		baseUrl += queryString;
-		// 	}
-		// 	else {
-		// 		baseUrl += '/' + queryString;
-		// 	}
-
-		// 	if (location.protocol === 'https:') {
-		// 		var newUrl = 'http://' + baseUrl;
-		// 		console.log('redirecting from https to http', newUrl);
-
-		// 		// was already redirected from http version
-		// 		// if (location.search.indexOf('redirected=http:') > -1) {
-		// 		// }
-		// 		// Rollbar.critical("socket error 1006 over https", { data: { code: code, reason: reason, wasClean: wasClean } });
-
-		// 		location.href = newUrl;
-		// 	}
-		// 	else if (location.protocol === 'http:') {
-		// 		var newUrl = 'https://' + baseUrl;
-		// 		console.log('redirecting from http to https', newUrl);
-
-		// 		// was already redirected from https version
-		// 		// if (location.search.indexOf('redirected=https:') > -1) {
-		// 		// 	Rollbar.critical("socket error 1006 over http", { data: { code: code, reason: reason, wasClean: wasClean } });
-		// 		// }
-
-		// 		// Rollbar.critical("socket error 1006 over http", { data: { code: code, reason: reason, wasClean: wasClean } });
-		// 		if (location.hostname !== 'localhost') {
-		// 			location.href = newUrl;
-		// 		}
-		// 	}
-		// }
-
-		// If we are already connected and have an id...
-		if (this._state === 3) {
-			this._state = 0;
-			this.emit('disconnect', { reason: this._disconnectReason, wasClean: wasClean, code: code });
-		}
-
-		// If we are connected but have no id...
-		if (this._state === 2) {
-			this._state = 0;
-			this.emit('disconnect', { reason: this._disconnectReason, wasClean: wasClean, code: code });
-		}
-
-		// If we were trying to connect...
-		if (this._state === 1) {
-			this._state = 0;
-			this.emit('error', { reason: 'Cannot establish connection, is server running?' });
-		}
-
-		// Remove the last disconnect reason
-		delete this._disconnectReason;
 	},
 
 	_onError: function () {

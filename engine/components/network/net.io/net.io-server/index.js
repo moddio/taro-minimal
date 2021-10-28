@@ -524,8 +524,8 @@ NetIo.Server = NetIo.EventingClass.extend({
 	init: function (port, callback) {
 		this._idCounter = 0;
 
-		this._websocket = require('@clusterws/cws');
-		// this._websocket = require('ws');
+		// this._websocket = require('@clusterws/cws');
+		this._websocket = require('ws');
 		this._fs = require('fs');
 		this._http = require('http');
 		this._https = require('https');
@@ -546,25 +546,19 @@ NetIo.Server = NetIo.EventingClass.extend({
 	start: function (port, callback) {
 		var self = this;
 		this._port = port;
-		var secure = true; // to turn on/off https
-		if (process.env.ENV == 'local' || process.env.ENV == 'standalone' || process.env.ENV == 'standalone-remote') {
-			secure = false;
-			console.log('***');
-			console.log('*** running in ENV local - turning https off ***');
-			console.log('***');
-		}
-
+		var secure = process.env.SSL; // to turn on/off https
+		
 		// http
 		this._httpServer = this._http.createServer(function (request, response) {
 			response.writeHead(404);
 			response.end();
 		});
-		// this._socketServerHttp = new this._websocket.Server({
-		//     server: this._httpServer
-		// });
-		this._socketServerHttp = new this._websocket.WebSocketServer({
-			server: this._httpServer
+		this._socketServerHttp = new this._websocket.Server({
+		    server: this._httpServer
 		});
+		// this._socketServerHttp = new this._websocket.WebSocketServer({
+		// 	server: this._httpServer
+		// });
 		// Setup listener
 		this._socketServerHttp.on('connection', function (ws, request) {
 			self.socketConnection(ws, request);
@@ -595,8 +589,7 @@ NetIo.Server = NetIo.EventingClass.extend({
 
 		// https
 		if (secure) {
-			console.log(`https port ${ige.server.httpsPort}`);
-			self._portSecure = ige.server.httpsPort;
+			self._portSecure = 443;
 			var privateKey = this._fs.readFileSync('../sslcert/modd_ssl.key', 'utf8');
 			var certificate = this._fs.readFileSync('../sslcert/modd_ssl.crt', 'utf8');
 			var options = { key: privateKey, cert: certificate };

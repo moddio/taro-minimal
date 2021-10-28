@@ -33,7 +33,7 @@ function mockIgeConnection(i) {
     // closure exists to save i variable
     return function () {
         var name = 'bot_' + i
-        var client = new WebSocket(`ws://${IP}:2000/?token=`, 'netio1')
+        var client = new WebSocket(`ws://${IP}/?token=`, 'netio1')
 
         client.on('connectFailed', error => {
             console.log('Connect Error: ' + error.toString())

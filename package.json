@@ -3,16 +3,15 @@
   "main": "server/ige.js",
   "version": "1.0.0",
   "scripts": {
-    "server": "cross-env node server/ige.js -g ./src",
-    "build": "cross-env node server/ige.js -deploy ./src -to ./src",
-    "debug": "cross-env --inspect server/ige.js -g ./src",
-    "dev:lint": "eslint . --fix"
+    "dev": "node server/ige.js -g ./src --inspect",
+    "prod": "cross-env ENV=prod node server/ige.js -g ./src",
+    "build": "node server/ige.js -deploy ./src -to ./src",
+    "dev:lint": "eslint . --fix"    
   },
   "dependencies": {
     "bad-words": "^3.0.4",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.19.0",
-    "clusterws": "^3.3.1",
     "cookie-parser": "^1.4.4",
     "crash-colliders": "^2.0.2",
     "ejs": "^3.1.5",
@@ -33,7 +32,7 @@
     "sha1": "^1.1.1",
     "tick": "0.1.1",
     "validator": "^5.7.0",
-    "ws": "^7.4.6",
+    "ws": "^8.2.3",
     "xss-filters": "^1.2.7"
   },
   "devDependencies": {

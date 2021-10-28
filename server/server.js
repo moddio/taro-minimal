@@ -82,7 +82,6 @@ var Server = IgeClass.extend({
 
 		};
 
-		ige.env = process.env.ENV || 'production';
 		self.config = config[ige.env];
 
 		if (!self.config) {
@@ -202,8 +201,8 @@ var Server = IgeClass.extend({
 	},
 	startServer: function () {
 		const app = express();
-		const port = process.env.PORT || 2000;
-		this.port = 2001; // game started on
+		const port = process.env.PORT || 80; // http server port
+		this.port = 2001; // game server port
 
 		app.use(bodyParser.urlencoded({ extended: false }));
 		// parse application/json
@@ -303,8 +302,12 @@ var Server = IgeClass.extend({
 					},
 					analyticsUrl: '/'
 				};
-	
-				return res.render('index.ejs', options);
+				
+				if (process.env.ENV == 'prod') {
+					return res.render('index-dist.ejs', options);
+				} else {
+					return res.render('index.ejs', options);
+				}
 			}
 			
 			
@@ -329,11 +332,6 @@ var Server = IgeClass.extend({
 		this.duplicateIpCount = {};
 		this.bannedIps = [];
 
-		// switch (process.env.TIER) {
-		// 	case '1': maxPlayerForTier = 16; break;
-		// 	case '2': maxPlayerForTier = 32; break;
-		// 	case '3': maxPlayerForTier = 64; break;
-		// }
 		self.maxPlayers = self.maxPlayers || 32;
 		this.maxPlayersAllowed = self.maxPlayers || 32;
 

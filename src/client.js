@@ -28,8 +28,6 @@ var Client = IgeClass.extend({
         self.loadedTextures = {};
 
         console.log("var getUrl ", window.location.hostname)
-        if (window.location.hostname == 'localhost')
-            ige.env = 'local'
 
         self.entityUpdateQueue = {};
         self.errorLogs = [];
@@ -738,11 +736,7 @@ var Client = IgeClass.extend({
         if (typeof mode === 'string' && mode === 'sandbox') {
             ige.script.runScript('initialize', {});
         }
-        if (ige.env == 'local') {
-
-        }
-
-        // ige.physics.enableDebug(this.rootScene);
+        
     },
 
     defineNetworkEvents: function () {

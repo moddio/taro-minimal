@@ -637,6 +637,7 @@ var Client = IgeClass.extend({
             // check for all of the existing entities in the game
             ige.network.addComponent(IgeStreamComponent)
             ige.network.stream.renderLatency(50) // Render the simulation renderLatency milliseconds in the past
+            
             // ige.network.stream.sendInterval(sendInterval) // for some reason, this breaks game.js
             ige.network.stream._streamInterval = sendInterval;
             // Create a listener that will fire whenever an entity is created because of the incoming stream data

@@ -125,10 +125,18 @@
                 };
             })(jQuery);
 
-            SSL = false;
+            var SSL = false;
+            <% if (ssl == 'on') { %>
+                SSL = true
+            <% } %>
+
         </script>
-    
-        <script type="text/javascript" src="/engine/loader.js"></script>
+
+        <% if (env == 'prod') { %>
+            <script type="text/javascript" src="./src/game.js"></script>
+        <% } else { %>
+            <script type="text/javascript" src="/engine/loader.js"></script>
+        <% } %>
 </body>
 
 </html>

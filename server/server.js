@@ -7,7 +7,6 @@ const path = require('path');
 const bodyParser = require('body-parser');
 var request = require('request');
 const fs = require('fs');
-const cluster = require('cluster');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 _ = require('lodash');
 
@@ -27,30 +26,6 @@ function logfile (file) {
 module.exports = logfile;
 
 Error.stackTraceLimit = Infinity; // debug console.trace() to infinite lines
-
-global.rollbar = {
-	log: function () {
-		// do nothing in non prod env
-	},
-	error: function () {
-
-	}
-};
-
-if (process.env.ENV == 'production') {
-	var Rollbar = require('rollbar');
-	global.rollbar = new Rollbar({
-		accessToken: '326308ea71e041dc87e30fce4eb48d99',
-		captureUncaught: true,
-		captureUnhandledRejections: true
-	});
-
-	process.on('uncaughtException', function (err) {
-		global.rollbar.log(err);
-		console.log(`server.js uncaughtException: ${err.stack}`);
-		process.exit(0);
-	});
-}
 
 process.on('exit', function () {
 	console.log('process exit called.');
@@ -81,8 +56,6 @@ var Server = IgeClass.extend({
 
 		};
 
-		self.tier = process.env.TIER || 2;
-		self.region = process.env.REGION || 'apocalypse';
 		self.isScriptLogOn = process.env.SCRIPTLOG == 'on';
 		self.gameLoaded = false;
 		self.coinUpdate = {};
@@ -110,7 +83,6 @@ var Server = IgeClass.extend({
 		global.myIp = process.env.IP;
 
 		console.log('environment', ige.env, self.config);
-		console.log('isDev =', global.isDev);
 
 		self.internalPingCount = 0;
 
@@ -240,8 +212,6 @@ var Server = IgeClass.extend({
 				};
 				
 				const options = {
-					isAuthenticated: false,
-					env: process.env.ENV,
 					gameId: process.env.npm_config_game,
 					user: {},
 					isOpenedFromIframe: false,
@@ -267,7 +237,6 @@ var Server = IgeClass.extend({
 						maxPlayers: 32,
 						acceptingPlayers: true
 					}],
-					createdBy: '',
 					menudiv: false,
 					gameTitle: game.title,
 					currentUserPresentInHighscore: false,
@@ -293,30 +262,12 @@ var Server = IgeClass.extend({
 						smallChest: 0,
 						bigChest: 0
 					},
+					ssl: process.env.SSL,
+					env: process.env.ENV,
 					analyticsUrl: '/'
 				};
 
-				 // Website you wish to allow to connect
-				 res.setHeader('Access-Control-Allow-Origin', 'http://localhost');
-
-				 // Request methods you wish to allow
-				 res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-			 
-				 // Request headers you wish to allow
-				 res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-			 
-				 // Set to true if you need the website to include cookies in the requests sent
-				 // to the API (e.g. in case you use sessions)
-				 res.setHeader('Access-Control-Allow-Credentials', true);
-				
-				if (process.env.ENV == 'prod') {
-					if (process.env.SSL == 'on')
-						return res.render('index-dist-ssl.ejs', options);
-					
-					return res.render('index-dist.ejs', options);
-				} else {
-					return res.render('index.ejs', options);
-				}
+				return res.render('index.ejs', options);
 			}
 			
 			

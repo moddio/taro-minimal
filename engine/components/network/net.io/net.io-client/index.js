@@ -182,6 +182,7 @@ NetIo.Client = NetIo.EventingClass.extend({
 
 					// Now we have an id, set the state to connected
 					// Emit the connect event
+
 					this.emit('connect', this.id);
 					break;
 

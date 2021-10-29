@@ -25,40 +25,33 @@ var IgeNetIoClient = {
 	 * network has started.
 	 */
 	start: function (server, callback) {
-		if (this._state === 3) {
-			// We're already connected
-			if (typeof (callback) === 'function') {
-				callback(server);
-			}
-		} else {
-			this.artificialDelay = 0;
-			this.lagVariance = 0;
+		this.artificialDelay = 0;
+		this.lagVariance = 0;
 
-			var self = this;			
-			self._startCallback = callback;
+		var self = this;			
+		self._startCallback = callback;
 
-			var sortedServers = [server];
-			
-			sortedServers.reduce(function (p, server) {
-				var defer = $.Deferred();
+		var sortedServers = [server];
+		
+		sortedServers.reduce(function (p, server) {
+			var defer = $.Deferred();
 
-				p.then(function () {
-					// console.log(server, self._state);
-					// if client's is not connected yet
-					url = server.url;
-					
-					window.connectedServer = server;
-
-					if (typeof (WebSocket) !== 'undefined') {
-						self.connectToGS(url)							
-					} else {
-						defer.reject('websockets are not available');
-					}
-				});
+			p.then(function () {
+				// console.log(server, self._state);
+				// if client's is not connected yet
+				url = server.url;
 				
-				return defer;
-			}, $.when())
-		}
+				window.connectedServer = server;
+
+				if (typeof (WebSocket) !== 'undefined') {
+					self.connectToGS(url)							
+				} else {
+					defer.reject('websockets are not available');
+				}
+			});
+			
+			return defer;
+		}, $.when())
 	},
 
 	/**

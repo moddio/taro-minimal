@@ -66,6 +66,7 @@ NetIo.Client = NetIo.EventingClass.extend({
 
 		// If we were passed a url, connect to it
 		if (url !== undefined) {
+			console.log("netio client connecting to ", url)
 			this.connect(url);
 		}
 	},
@@ -87,11 +88,10 @@ NetIo.Client = NetIo.EventingClass.extend({
 	},
 
 	connect: function (url) {
-		this.log(`Connecting to server at ${url}`);
 		var self = this;
 
 		// Create new websocket to the url
-		this._socket = new WebSocket(`${url}?token=${localStorage.getItem('token')}`, 'netio1');
+		this._socket = new WebSocket(`${url}`, 'netio1');
 
 		// Setup event listeners
 		this._socket.onmessage = function () { self._onData.apply(self, arguments); };

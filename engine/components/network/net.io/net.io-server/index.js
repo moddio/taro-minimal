@@ -649,33 +649,13 @@ NetIo.Server = NetIo.EventingClass.extend({
 		var self = this;
 		var jwt = require('jsonwebtoken');
 		var PING_SERVICE_HEADER = 'x-ping-service';
-		self.log('Client connecting...');
+		console.log('a client is attempting to connect...');
 		// var connection = request.accept('netio1', request.origin),
 		var socket = new NetIo.Socket(ws);
 		// Give the socket encode/decode methods
 		socket._encode = self._encode;
 		socket._decode = self._decode;
 		socket._remoteAddress = ws._socket.remoteAddress;
-
-		// extracting user from token and adding it in _token.
-		// if token doesnot exist in request close the socket.
-
-		if (request.url.indexOf('/?token=') === -1) {
-			socket.close('Unauthorized request');
-			return;
-		}
-
-		var token = request.url && request.url.replace('/?token=', '');
-		try {
-			var decodedToken = jwt.verify(token, 'k=9PE%C&Ammu}<K');
-			socket._token = {
-				userId: decodedToken.userId
-			};
-		} catch (e) {
-			socket._token = {
-				userId: ''
-			};
-		}
 
 		// Give the socket a unique ID
 		socket.id = self.newIdHex();

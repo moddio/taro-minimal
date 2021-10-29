@@ -131,30 +131,6 @@ var IgeNetIoClient = {
 						}
 					}
 					self.timeSyncStart();
-
-					// setTimeout(function () {
-					// 	if (location.protocol === 'http:' && location.search.indexOf('redirected=true') > -1) {
-					// 		// Rollbar.info("Redirect User stayed connected for 10s, current socket state" + self._state);
-					// 	}
-
-					// 	if (window.history) {
-					// 		var parts = location.href.split('?');
-					// 		var domain = parts[0];
-					// 		var queryString = parts[1] || '';
-					// 		var queryParameters = queryString.split('&');
-
-					// 		// remove query param redirect from string to prevent it's misuse on reload
-					// 		queryParameters = queryParameters.filter(function (params) {
-					// 			return params.indexOf('redirected=') === -1;
-					// 		});
-
-					// 		queryString = queryParameters.join('&');
-					// 		var url = [domain, queryString].join('?');
-
-					// 		window.history.pushState(null, "", url)
-					// 	}
-					// }, 10000);
-
 					defer.resolve();
 				}
 			} else {

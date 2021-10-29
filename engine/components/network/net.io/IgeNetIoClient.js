@@ -69,17 +69,6 @@ var IgeNetIoClient = {
 		this._io = new NetIo.Client(url);
 		self._state = 1; // Connecting
 
-		var timer = setTimeout(function () {
-			console.log('connection timed out', url);
-			// self._io.disconnect('connection timed out');
-
-			clearTimeout(timer);
-
-			self._state = 0;
-			self._io.disconnect('Client timed out');
-
-			defer.reject();
-		}, 7000);
 
 		// Define connect listener
 		this._io.on('connect', function (clientId) {
@@ -103,8 +92,7 @@ var IgeNetIoClient = {
 
 				// Check if the data is an init packet
 				if (data.cmd === 'init') {
-					clearTimeout(timer);
-
+					
 					// Set flag to show we've now received an init command
 					self._initDone = true;
 					self._state = 3; // Connected and init done

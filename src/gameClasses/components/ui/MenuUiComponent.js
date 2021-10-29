@@ -190,24 +190,11 @@ var MenuUiComponent = IgeEntity.extend({
 					$('#server-list').attr('size', serverLength);
 					$('#server-list').focus();
 				} else {
-					// did user tried to change server
-					var isServerChanged = window.connectedServer && ige.client.server.id !== window.connectedServer.id;
-
-					if (isServerChanged) {
-						window.location = `${window.location.pathname}?serverId=${ige.client.server.id}&joinGame=true`;
-						return;
-					}
-
-					if (ige.game && ige.game.isGameStarted) {
-						var wasGamePaused = this.innerText.includes('Continue');
-						self.playGame(wasGamePaused);
-						self.setResolution();
-					} else {
-						$('#play-game-button').attr('disabled', true);
-						self.startLoading();
-						ige.client.connectToServer();
-					}
+					$('#play-game-button').attr('disabled', true);
+					self.startLoading();
+					ige.client.connectToServer();
 				}
+				
 				$('#play-game-button-wrapper').addClass('d-none-important');
 			});
 

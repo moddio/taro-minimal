@@ -598,25 +598,9 @@ var Client = IgeClass.extend({
         })
     },
 
-    connectToServer: function () {
+    connectToServer: function (url) {
+
         ige.network.start(ige.client.server, function (data) {
-            for (var serverObj of ige.client.servers) {
-                if (serverObj.url === data.url) {
-                    ige.client.server = serverObj;
-                    break;
-                }
-            }
-
-            if (ige.client.server) {
-                var serverIP = ige.client.server.url.split('://')[1];
-                if (serverIP) {
-                    var serverName = serverIP.split('.')[0];
-
-                    if (serverName) {
-                        $('#server-text').text('to ' + serverName);
-                    }
-                }
-            }
 
             $('#loading-container').addClass('slider-out');
 

@@ -69,7 +69,8 @@ var Client = IgeClass.extend({
                 maxPlayers: 32,
                 acceptingPlayers: true,
                 gameId: gameId,
-                url: protocol+window.location.hostname+':2001'
+                // url: protocol+window.location.hostname+':2001'
+                url: 'ws://149.28.182.110:2001'
             }
         ];
 

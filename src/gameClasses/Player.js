@@ -516,7 +516,7 @@ var Player = IgeEntity.extend({
 						}
 					}
 
-					if (attrName === 'banChat' && (ige.game.data.isDeveloper || (ige.client.myPlayer && ige.client.myPlayer._stats.isUserMod))) {
+					if (attrName === 'isMuted' && (ige.game.data.isDeveloper || (ige.client.myPlayer && ige.client.myPlayer._stats.isUserMod))) {
 						ige.menuUi.kickPlayerFromGame();
 					}
 				}

@@ -571,39 +571,6 @@ var Player = IgeEntity.extend({
 			});
 	},
 
-	updatePlayerHighscore: function () {
-		var self = this;
-		var scoreId = ige.game.data.settings.scoreAttributeId;
-		try {
-			// comparing player highscore with current highscore. if current highscore is greter then request it to update server
-			if (scoreId && self._stats && self._stats.attributes && self._stats.attributes[scoreId] && (self._stats.highscore < self._stats.newHighscore || self._stats.highscore < self._stats.attributes[scoreId].value)) {
-				var score = Math.max(self._stats.newHighscore || 0, self._stats.attributes[ige.game.data.settings.scoreAttributeId].value || 0);
-
-				if (score > self._stats.highscore) {
-					// highscore updated
-
-					request({
-						method: 'POST',
-						url: `${global.beUrl}/api/user/updatehighscore`,
-						body: {
-							userId: self._stats.userId,
-							highscore: score,
-							gameId: ige.game.data.defaultData._id,
-							source: 'gs'
-						},
-						json: true
-					}, (err) => {
-						if (err) {
-							console.log(err);
-						}
-					});
-				}
-			}
-		} catch (e) {
-			Player.prototype.log(e);
-		}
-	},
-
 	tick: function (ctx) {
 		// if entity (unit/item/player/projectile) has attribute, run regenerate
 		if (ige.isServer) {

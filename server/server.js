@@ -11,7 +11,6 @@ const cluster = require('cluster');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 _ = require('lodash');
 
-const config = require('../config');
 const { FILE } = require('dns');
 const Console = console.constructor;
 // redirect global console object to log file
@@ -82,12 +81,6 @@ var Server = IgeClass.extend({
 
 		};
 
-		self.config = config[ige.env];
-
-		if (!self.config) {
-			self.config = config.default;
-		}
-
 		self.tier = process.env.TIER || 2;
 		self.region = process.env.REGION || 'apocalypse';
 		self.isScriptLogOn = process.env.SCRIPTLOG == 'on';
@@ -115,7 +108,6 @@ var Server = IgeClass.extend({
 		self.serverStartTime = new Date();// record start time
 		global.isDev = ige.env == 'dev' || ige.env == 'local' || ige.env === 'standalone' || ige.env === 'standalone-remote';
 		global.myIp = process.env.IP;
-		global.beUrl = self.config.BE_URL;
 
 		console.log('environment', ige.env, self.config);
 		console.log('isDev =', global.isDev);
@@ -303,6 +295,19 @@ var Server = IgeClass.extend({
 					},
 					analyticsUrl: '/'
 				};
+
+				 // Website you wish to allow to connect
+				 res.setHeader('Access-Control-Allow-Origin', 'http://localhost');
+
+				 // Request methods you wish to allow
+				 res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+			 
+				 // Request headers you wish to allow
+				 res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+			 
+				 // Set to true if you need the website to include cookies in the requests sent
+				 // to the API (e.g. in case you use sessions)
+				 res.setHeader('Access-Control-Allow-Credentials', true);
 				
 				if (process.env.ENV == 'prod') {
 					if (process.env.SSL == 'on')
@@ -350,26 +355,13 @@ var Server = IgeClass.extend({
 		// Start the network server
 		ige.network.start(self.port, function (data) {
 			console.log('IgeNetIoComponent: listening to', self.url);
-			console.log('connecting to BE:', global.beUrl);
-
-			var domain = null;
-
-			// dev gets map from local file
-			if (ige.env == 'standalone' || ige.env == 'standalone-remote' || ige.env === 'production') { // production or staging gets map data from API
-				// using BE's URL instead of GS Manager because GS Manager is overloaded right now so..
-				domain = 'https://www.modd.io';
-			} else {
-				domain = global.beUrl;
-			}
-
-			console.log('connecting to BE:', global.beUrl);
-
+		
 			var promise;
 
 			if (gameJson) {
 				promise = Promise.resolve(gameJson);
 			} else if (ige.server.gameId) {
-				var gameUrl = `${domain}/api/game-client/${ige.server.gameId}/?source=gs`;
+				var gameUrl = `https://www.modd.io/api/game-client/${ige.server.gameId}/?source=gs`;
 				console.log('gameUrl', gameUrl);
 				promise = self.loadGameJSON(gameUrl);
 			} else {
@@ -634,107 +626,7 @@ var Server = IgeClass.extend({
 			}
 		}
 	},
-
-	giveCoinToUser: function (player, coin, itemName) {
-		if (coin && player._stats && player._stats.userId && (ige.game.data.defaultData.tier == 3 || ige.game.data.defaultData.tier == 4)) {
-			request({
-				method: 'POST',
-				url: `${global.beUrl}/api/user/updateCoins`,
-				body: {
-					creatorId: ige.game.data.defaultData.owner,
-					userId: player._stats.userId,
-					coins: coin,
-					game: ige.game.data.defaultData._id
-				},
-				json: true
-			}, (err, httpResponse, body) => {
-				const statusCode = httpResponse && httpResponse.statusCode;
-
-				if (err) {
-					console.log(err);
-				}
-
-				if (statusCode !== 200) {
-					console.log(new Error(`BE responded with statusCode ${statusCode}`));
-				}
-
-				if (body) {
-					if (body.status === 'success') {
-						player.streamUpdateData([{ coins: body.message }]);
-					}
-					if (body.status === 'error') {
-						ige.chat.sendToRoom('1', `cannot create ${itemName}. ${body.message.username} is out of coins`, player._stats.clientId, undefined);
-					}
-				} else {
-					console.log(new Error('BE responded without body (giveCoinToUser)'));
-				}
-			});
-			// console.log('player stream update', coin)
-		}
-	},
-	postConsumeCoinsForUsers: function () {
-		var self = this;
-		request({
-			method: 'POST',
-			url: `${global.beUrl}/api/user/consumecoins`,
-			body: self.coinUpdate,
-			json: true
-		}, (err, httpResponse, body) => {
-			const statusCode = httpResponse && httpResponse.statusCode;
-
-			if (err) {
-				console.log(err);
-			}
-
-			if (statusCode !== 200) {
-				console.log(new Error(`BE responded with statusCode ${statusCode}`));
-			}
-
-			if (body) {
-				if (body.status === 'success') {
-					if (body.message && body.message.length > 0) {
-						body.message.forEach(function (updatedCoinsValue) {
-							var foundPlayer = ige.$$('player').find(function (player) {
-								return player && player._stats && player._stats.clientId == updatedCoinsValue.clientId;
-							});
-							if (foundPlayer) {
-								foundPlayer.streamUpdateData([{ coins: updatedCoinsValue.coinsLeft }]);
-							}
-						});
-					}
-					self.coinUpdate = {};
-				}
-				if (body.status === 'error') {
-					// console.log('error in buying item')
-				}
-			}
-		});
-	},
-	consumeCoinFromUser: function (player, coins, boughtItemId) {
-		var self = this;
-		if (player && coins && (ige.game.data.defaultData.tier == 3 || ige.game.data.defaultData.tier == 4)) {
-			if (ige.game.data.defaultData.owner != player._stats.userId) {
-				if (!self.coinUpdate[player._stats.clientId]) {
-					self.coinUpdate[player._stats.clientId] = {
-						creatorId: ige.game.data.defaultData.owner,
-						userId: player._stats.userId,
-						coins: coins,
-						game: ige.game.data.defaultData._id,
-						boughtItems: []
-					};
-				} else {
-					self.coinUpdate[player._stats.clientId].coins += coins;
-				}
-				if (self.coinUpdate[player._stats.clientId].boughtItems) {
-					self.coinUpdate[player._stats.clientId].boughtItems.push({
-						itemId: boughtItemId,
-						date: new Date(),
-						userId: player._stats.userId
-					});
-				}
-			}
-		}
-	},
+	
 	getStatus: function () {
 		var self = this;
 

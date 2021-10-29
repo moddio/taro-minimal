@@ -64,13 +64,12 @@ var Client = IgeClass.extend({
         }
         self.servers = [
             {
-                ip: 'window.location.hostname',
                 port: 2001,
                 playerCount: 0,
                 maxPlayers: 32,
                 acceptingPlayers: true,
                 gameId: gameId,
-                url: 'ws://braains.io:2001'
+                url: protocol+window.location.hostname+':2001'
             }
         ];
 

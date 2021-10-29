@@ -95,7 +95,7 @@ var IgeChatComponent = IgeEventingClass.extend({
 				message = message.substr(0, 80);
 
 			// don't send chat message if user is ban or unverified.
-			if (ige.env != 'local' && player && (player._stats.banChat || (gameData && gameData.allowVerifiedUserToChat && !player._stats.isUserVerified))) {
+			if (ige.env != 'local' && player && (player._stats.muted)) {
 				// don't send message
 			} else {
 				ige.network.send('igeChatMsg', { text: message, roomId: '1' });

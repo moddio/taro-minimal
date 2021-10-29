@@ -310,7 +310,7 @@ var MenuUiComponent = IgeEntity.extend({
 			html += `<button class="btn btn-danger kick-player-btn" data-clientid="${player._stats.clientId}" > Kick</button>`;
 			// html += '<button class="btn btn-warning ban-player-btn" data-clientid="' + player._stats.clientId + '" data-gameId="' + ige.game.data.defaultData._id + '" data-userId="' + player._stats.userId + '">Ban user</button>'
 			html += `<button class="btn btn-success ban-ip-btn" data-clientid="${player._stats.clientId}" data-gameId="${ige.game.data.defaultData._id}">Ban Ip</button>`;
-			html += `<button class="btn btn-primary ban-chat-btn" data-clientid="${player._stats.clientId}" data-gameId="${ige.game.data.defaultData._id}">${player._stats.banChat ? 'unmute' : 'mute'}</button>`;
+			html += `<button class="btn btn-primary ban-chat-btn" data-clientid="${player._stats.clientId}" data-gameId="${ige.game.data.defaultData._id}">${player._stats.isMuted ? 'unmute' : 'mute'}</button>`;
 			html += '</div>';
 			html += '</td>';
 			html += '</tr>';

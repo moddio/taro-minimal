@@ -631,31 +631,11 @@ var ServerNetworkEvents = {
 			}
 		}
 	},
-	_onBanChat: function ({ gameId, kickuserId }, clientId) {
+	_onMutePlayer: function ({ gameId, kickuserId }, clientId) {
 		var player = ige.game.getPlayerByClientId(clientId);
 
 		if (!player) {
 			return;
-		}
-
-		var isUserDeveloper = (player._stats.userId == ige.game.data.defaultData.owner) ||
-			ige.game.data.defaultData.invitedUsers.find(function (iu) { if (iu.user === player._stats.userId) { return true; } }) ||
-			player._stats.isUserAdmin ||
-			player._stats.isUserMod;
-
-		if (isUserDeveloper) {
-			var banPlayer = ige.$$('player').find(function (player) {
-				if (player._stats && player._stats.clientId === kickuserId) return true;
-			});
-			// kickedPlayer.streamUpdateData([{ playerJoined: false }]);
-
-			ige.clusterClient.banChat({
-				userId: banPlayer._stats.userId,
-				gameId: gameId,
-				status: !banPlayer._stats.banChat
-			});
-
-			banPlayer.streamUpdateData([{ banChat: !banPlayer._stats.banChat }]);
 		}
 	},
 	_onUnEquipSkin: function (unEquipedId, clientId) {

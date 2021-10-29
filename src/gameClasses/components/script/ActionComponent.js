@@ -549,17 +549,17 @@ var ActionComponent = IgeEntity.extend({
 
 						break;
 
-					case 'banPlayerFromChat':
+					case 'mutePlayer':
 						var player = ige.variable.getValue(action.player, vars);
 						if (player) {
-							player.streamUpdateData([{ banChat: true }]);
+							player.streamUpdateData([{ isMuted: true }]);
 						}
 						break;
 
 					case 'unbanPlayerFromChat':
 						var player = ige.variable.getValue(action.player, vars);
 						if (player) {
-							player.streamUpdateData([{ banChat: false }]);
+							player.streamUpdateData([{ isMuted: false }]);
 						}
 						break;
 

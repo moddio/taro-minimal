@@ -65,21 +65,17 @@ var IgeChatServer = {
 		var gameData = ige.game.data && ige.game.data.defaultData;
 		if (from && player && player._stats) {
 			// don't send message if player is ban from sending message or unverified
-			if (!global.isDev && (player._stats.banChat || (gameData && gameData.allowVerifiedUserToChat && !player._stats.isUserVerified))) {
+			if (!global.isDev && (player._stats.isMuted)) {
 				return;
 			} else if (this.isSpamming(from, message)) {
 				// permanently mute player from this game;
-				player._stats.banChat = true;
+				player._stats.isMuted = true;
 				var msg = {
 					roomId: roomId,
 					text: 'You have been muted for spamming.',
 					to: from
 				};
 				ige.network.send('igeChatMsg', msg, from);
-				ige.clusterClient.banChat({
-					gameId: gameData._id,
-					userId: player._stats.userId
-				});
 				return;
 			}
 

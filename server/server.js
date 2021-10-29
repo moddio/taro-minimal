@@ -536,7 +536,7 @@ var Server = IgeClass.extend({
 		ige.network.define('kick', self._onKick);
 		ige.network.define('ban-user', self._onBanUser);
 		ige.network.define('ban-ip', self._onBanIp);
-		ige.network.define('ban-chat', self._onBanChat);
+		ige.network.define('mutePlayer', self._onMutePlayer);
 
 		ige.network.define('setOwner', self._setOwner);
 

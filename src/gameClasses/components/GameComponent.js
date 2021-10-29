@@ -90,7 +90,7 @@ var GameComponent = IgeEntity.extend({
 			// ipAddress: data.ipAddress,
 			email: data.email,
 			isEmailVerified: data.isEmailVerified,
-			banChat: data.banChat,
+			isMuted: data.isMuted,
 			mutedUsers: data.mutedUsers,
 			isUserVerified: data.isUserVerified
 		};

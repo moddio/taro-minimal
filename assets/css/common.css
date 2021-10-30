@@ -45,6 +45,22 @@ body {
     max-width: 250;
 }
 
+.ui-text-center-lg {
+    font-size: 3em;
+    z-index: 1000;
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    color: white;
+  }
+
+  
 #open-inventory-button {
     margin-top: 10px;
     display: none;
@@ -55,6 +71,25 @@ body {
     color: white;
     margin: 10px;
     position: absolute;
+}
+
+#attribute-bars {
+    position: relative;
+    margin: auto;
+}
+
+
+.progress {
+    margin-bottom: 0px;
+    height: 24px;
+}
+
+.progress-bar {
+    margin: 3px;
+}
+
+.progress-label {
+    margin-left: 5px;
 }
 
 .item-class-normal {

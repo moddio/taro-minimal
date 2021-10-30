@@ -78,12 +78,7 @@ var Server = IgeClass.extend({
 			sensor: 0
 		};
 
-		self.serverStartTime = new Date();// record start time
-		global.isDev = ige.env == 'dev' || ige.env == 'local' || ige.env === 'standalone' || ige.env === 'standalone-remote';
-		global.myIp = process.env.IP;
-
-		console.log('environment', ige.env, self.config);
-
+		self.serverStartTime = new Date();// record start time		
 		self.internalPingCount = 0;
 
 		ige.debugEnabled(global.isDev);
@@ -165,7 +160,7 @@ var Server = IgeClass.extend({
 	},
 	startServer: function () {
 		const app = express();
-		const port = process.env.PORT || 80; // http server port
+		const port = 80; // http server port
 		this.port = 2001; // game server port
 
 		app.use(bodyParser.urlencoded({ extended: false }));
@@ -262,8 +257,8 @@ var Server = IgeClass.extend({
 						smallChest: 0,
 						bigChest: 0
 					},
-					ssl: process.env.SSL,
-					env: process.env.ENV,
+					ssl: process.env.ssl,
+					env: process.env.env,
 					analyticsUrl: '/'
 				};
 
@@ -425,7 +420,7 @@ var Server = IgeClass.extend({
 						// send dev logs to developer every second
 						var logInterval = setInterval(function () {
 							// send only if developer client is connect
-							if (ige.isServer && ((self.developerClientId && ige.server.clients[self.developerClientId]) || process.env.ENV == 'standalone')) {
+							if (ige.isServer && ((self.developerClientId && ige.server.clients[self.developerClientId]))) {
 								ige.variable.devLogs.status = ige.server.getStatus();
 								ige.network.send('devLogs', ige.variable.devLogs, self.developerClientId);
 
@@ -557,13 +552,7 @@ var Server = IgeClass.extend({
 		if (ige.clusterClient && ige.clusterClient.markedAsKilled) {
 			return;
 		}
-
-		// send a message to master cluster
-		if (ige.env != 'dev' && process && process.send) {
-			process.send({ chat: 'kill server called' });
-		}
-		// ige.clusterClient.disconnect();
-
+		
 		ige.clusterClient && ige.clusterClient.kill(log);
 	},
 

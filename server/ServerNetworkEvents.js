@@ -95,11 +95,6 @@ var ServerNetworkEvents = {
 		var client = ige.server.clients[clientId];
 		var socket = ige.network._socketById[clientId];
 
-
-		if (process.env.ENV === 'standalone' || process.env.ENV == 'standalone-remote') {
-			delete data._id;
-		}
-
 		var logInfo = {};
 
 		if (data._id) {

@@ -124,7 +124,7 @@ var IgeChatComponent = IgeEventingClass.extend({
 				var player = ige.game.getPlayerByClientId(msgData.from);
 				var playerName = this.escapeOutput(player._stats.name);
 				if (player && player._stats) {
-					msgDiv = $('<div><span class=\'author\' style=\'color: #99F000;\'></span>:<span class=\'msg ml-1\'></span></div>');
+					msgDiv = $('<div><span class=\'author\' style=\'color: #99F000;\'></span>:<span class=\'msg\' style=\'margin-left:10px\'></span></div>');
 					$(msgDiv).find('.author').text(player._stats.name);
 					$(msgDiv).find('.msg').text(msgData.text);
 				}

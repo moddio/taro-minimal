@@ -1893,7 +1893,7 @@ var VariableComponent = IgeEntity.extend({
 	updateDevConsole: function (data) {
 		var self = this;
 		// if a developer is connected, send
-		if (ige.isServer && (ige.server.developerClientId || process.env.ENV === 'standalone' || process.env.ENV == 'standalone-remote')) {
+		if (ige.isServer && process.env.env === 'dev') {
 			// only show 'object' string if env variable is object
 			if (typeof data.params.newValue == 'object') {
 				self.devLogs[data.params.variableName] = `object ${(data.params.newValue._stats) ? `(${data.params.newValue._category}): ${data.params.newValue._stats.name}` : ''}`;

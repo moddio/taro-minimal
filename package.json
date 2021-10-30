@@ -3,9 +3,9 @@
   "main": "server/ige.js",
   "version": "1.0.0",
   "scripts": {
-    "dev": "node server/ige.js -g ./src --inspect",
-    "prod": "cross-env ENV=prod node server/ige.js -g ./src",
-    "prod:ssl": "cross-env ENV=prod SSL=on node server/ige.js -g ./src",
+    "dev": "cross-env env=dev node server/ige.js -g ./src --inspect",
+    "prod": "cross-env env=prod node server/ige.js -g ./src",
+    "prod:ssl": "cross-env env=prod ssl=on node server/ige.js -g ./src",
     "build": "node server/ige.js -deploy ./src -to ./src",
     "dev:lint": "eslint . --fix"    
   },

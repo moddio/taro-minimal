@@ -1303,7 +1303,7 @@ var ShopComponent = IgeEntity.extend({
 			while (self.inventory.length < self.maxInventorySize) {
 				self.addItem(ige.item.getRandomItemData({ isPurchasable: true })); // only get items that have isPurchasable set as true
 			}
-		}, (process.env.ENV == 'dev') ? 3000 : 30000);
+		}, (process.env.env == 'dev') ? 3000 : 30000);
 	},
 
 	addItem: function (data) {

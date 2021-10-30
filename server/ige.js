@@ -65,31 +65,7 @@ if (!args['-deploy']) {
 	IgeClass = require('../engine/core/IgeClass');
 }
 
-if (process.env.ENV == 'dev') {
-	// Include the control class
-	IgeNode = require('./IgeNode');
-	var igeNode = new IgeNode(); // master IgeNode
-} else {
-	var self = this;
-	// Start the app
-	IgeNode = require('./IgeNode');
-	var igeNode = new IgeNode();
-
-	if (cluster.isMaster) // master cluster!
-	{
-		// Fork workers.
-		var debug = process.execArgv.indexOf('--debug') !== -1;
-		cluster.setupMaster({
-			execArgv: process.execArgv.filter(function (s) { return s !== '--debug'; })
-		});
-	} else // slave workers! ;-;
-	{
-		// Workers can share any TCP connection
-		// In this case it is an HTTP server
-		// Include the control class
-
-		process.env.cluster = 'worker';
-
-		console.log(`Worker ${process.pid} started`);
-	}
-}
+var self = this;
+// Start the app
+IgeNode = require('./IgeNode');
+var igeNode = new IgeNode();

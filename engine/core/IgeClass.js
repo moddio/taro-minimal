@@ -1,11 +1,3 @@
-
-try {
-	global.cenv = process.env.ENV || 'staging';
-	global.isDev = false;
-} catch (e) {
-
-}
-
 var IgeClass = (function () {
 	var initializing = false;
 	var fnTest = /xyz/.test(function () { xyz; }) ? /\b_super\b/ : /.*/;

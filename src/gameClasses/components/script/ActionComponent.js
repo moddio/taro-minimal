@@ -315,11 +315,11 @@ var ActionComponent = IgeEntity.extend({
 						break;
 
 					case 'startAcceptingPlayers':
-						ige.clusterClient.setAcceptingPlayerStatus(true);
+						// ige.clusterClient.setAcceptingPlayerStatus(true);
 						break;
 
 					case 'stopAcceptingPlayers':
-						ige.clusterClient.setAcceptingPlayerStatus(false);
+						// ige.clusterClient.setAcceptingPlayerStatus(false);
 						break;
 					case 'saveUnitData':
 						var unit = ige.variable.getValue(action.unit, vars);
@@ -328,7 +328,7 @@ var ActionComponent = IgeEntity.extend({
 
 						if (unit && ownerPlayer && userId && ownerPlayer.persistentDataLoaded) {
 							var data = unit.getPersistentData('unit');
-							ige.clusterClient.saveUserData(userId, data, 'unit');
+							// ige.clusterClient.saveUserData(userId, data, 'unit');
 						} else {
 							if (!unit.persistentDataLoaded) {
 								ige.devLog('Fail saving unit data bcz persisted data not set correctly');
@@ -343,14 +343,14 @@ var ActionComponent = IgeEntity.extend({
 
 						if (player && userId && player.persistentDataLoaded) {
 							var data = player.getPersistentData('player');
-							ige.clusterClient.saveUserData(userId, data, 'player');
+							// ige.clusterClient.saveUserData(userId, data, 'player');
 
 							var unit = player.getSelectedUnit();
 							var userId = player._stats.userId;
 
 							if (unit && player && userId && unit.persistentDataLoaded) {
 								var data = unit.getPersistentData('unit');
-								ige.clusterClient.saveUserData(userId, data, 'unit');
+								// ige.clusterClient.saveUserData(userId, data, 'unit');
 							} else {
 								if (!unit.persistentDataLoaded) {
 									ige.devLog('Fail saving unit data bcz persisted data not set correctly');
@@ -869,9 +869,7 @@ var ActionComponent = IgeEntity.extend({
 
 							loopCounter++;
 							if (loopCounter > 10000) {
-								var errorMsg = ige.script.errorLog('infinite loop detected');
-								console.log(errorMsg);
-								ige.server.unpublish(errorMsg);
+								ige.server.kill();
 							}
 						}
 						break;

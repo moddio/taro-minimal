@@ -64,13 +64,13 @@ var Client = IgeClass.extend({
         }
         self.servers = [
             {
-                port: 2001,
+                port: 2000,
                 playerCount: 0,
                 maxPlayers: 32,
                 acceptingPlayers: true,
                 gameId: gameId,
-                url: protocol+window.location.hostname+':2001'
-                // url: 'ws://149.28.182.110:2001'
+                url: protocol+window.location.hostname+':2000'
+                // url: 'ws://149.28.182.110:2000'
             }
         ];
 

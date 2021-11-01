@@ -41,17 +41,6 @@ var ServerNetworkEvents = {
 
 		if (client && client._id) {
 			ige.devLog("BE(out): clientDisconnect: " + clientId + " " + client._id)
-
-			if (player) {
-				console.log("_onclientDisconnect" + clientId + " (" + player._stats.name + ")" + (Date.now() - client.lastEventAt));
-				player.updatePlayerHighscore();
-
-				if (player._stats.userId) {
-					ige.clusterClient.saveLastPlayedTime(player._stats.userId);
-				}
-			}
-
-			ige.clusterClient.emit("clientDisconnect", client._id)
 		}
 
 		delete client;
@@ -142,116 +131,24 @@ var ServerNetworkEvents = {
 			return;
 		}
 
-		// if user is logged-in
-		if (data && data._id) {
-			// if player already exists in the game
-			var player = ige.game.getPlayerByUserId(data._id);
+		console.log("joining as a guest player")
 
-			//condition for menu open and click for play game button durring current play game.
-			if (player && player._stats && clientId != player._stats.clientId) {
-				console.log('Client already exists. Kicking the existing player ' + player._stats.clientId + " (" + player._stats.name + ")");
-				player.updatePlayerHighscore();
-				var oldPlayerClientId = player._stats.clientId;
-				ige.network.send('clientDisconnect', { reason: 'Player disconnected', clientId: oldPlayerClientId });
+		var socket = ige.network._socketById[clientId]
+		if (socket) {
 
-				if (ige.server.clients[oldPlayerClientId] && ige.server.clients[oldPlayerClientId]._id) {
-					ige.clusterClient.emit("clientDisconnect", ige.server.clients[oldPlayerClientId]._id)
-				}
+			// if this guest hasn't created player yet (hasn't joined the game yet)
+			var player = ige.game.getPlayerByClientId(socket.id)
 
-				delete ige.server.clients[oldPlayerClientId];
+			var player = ige.game.createPlayer({
+				controlledBy: "human",
+				name: "user" + data.number,
+				coins: 0,
+				points: 0,
+				clientId: clientId,
+				isAdBlockEnabled: data.isAdBlockEnabled
+			});
 
-				//kicking player out of the game.
-				player.remove();
-			}
-
-			//if player open menu during game play
-			if (player && clientId == player._stats.clientId) {
-				console.log("Player requested to join game " + clientId + " (" + player._stats.name + ")")
-				player._stats.isAdBlockEnabled = data.isAdBlockEnabled;
-				player.joinGame();
-			}
-			else {
-				if (client) {
-					client._id = data._id
-				}
-
-				console.log("request-user-data for " + clientId + ' (user._id:' + data._id + ")");
-				ige.clusterClient && ige.clusterClient.emit("request-user-data", data)
-				if (process.env.ENV === 'standalone') {
-					if (player == undefined) {
-						var userData = {
-							controlledBy: 'human',
-							name: 'user' + (Math.floor(Math.random() * 999) + 100),
-							points: 0,
-							coins: 0,
-							clientId: client._id,
-							purchasables: {}
-						};
-						var player = ige.game.createPlayer()
-						for (key in userData) {
-							var obj = {}
-							obj[key] = userData[key];
-							data.push(obj)
-						}
-						player.joinGame();
-						player.streamUpdateData(data);
-					}
-				}
-			}
-
-		}
-		else // guest player
-		{
-			console.log("joining as a guest player")
-
-			var socket = ige.network._socketById[clientId]
-			if (socket) {
-
-				// if this guest hasn't created player yet (hasn't joined the game yet)
-				var player = ige.game.getPlayerByClientId(socket.id)
-
-				if (player) {
-					player._stats.isAdBlockEnabled = data.isAdBlockEnabled;
-				} else {
-					if (typeof data.number != 'number') {
-						data.number = " lol"
-					}
-
-					var player = ige.game.createPlayer({
-						controlledBy: "human",
-						name: "user" + data.number,
-						coins: 0,
-						points: 0,
-						clientId: clientId,
-						isAdBlockEnabled: data.isAdBlockEnabled
-					});
-				}
-
-				player.joinGame();
-			}
-		}
-	},
-
-
-	_onBuySkin: function (skinHandle, clientId) {
-		var player = ige.game.getPlayerByClientId(clientId);
-		var unit = player.getSelectedUnit();
-		if (
-			unit &&
-			ige.game.data.skins &&
-			ige.game.data.skins[skinHandle] &&
-			unit._stats.points >= ige.game.data.skins[skinHandle].price &&
-			unit._stats.skin != skinHandle
-		) {
-			unit._stats.points -= ige.game.data.skins[skinHandle].price;
-			unit._stats.skin = skinHandle;
-			unit.updateTexture(skinHandle);
-
-			ige.network.send('buySkin', skinHandle, clientId);
-			unit.streamUpdateData([
-				{ skin: unit._stats.skin },
-				{ points: unit._stats.points }
-			])
+			player.joinGame();
 		}
 	},
 
@@ -585,9 +482,6 @@ var ServerNetworkEvents = {
 				if (player._stats && player._stats.clientId === kickuserId) return true;
 			});
 			kickedPlayer.streamUpdateData([{ playerJoined: false }]);
-			ige.clusterClient.banUser({
-				userId: userId
-			});
 		}
 	},
 	_onBanIp: function ({ gameId, kickuserId }, clientId) {
@@ -616,14 +510,6 @@ var ServerNetworkEvents = {
 			}
 
 			kickedPlayer.streamUpdateData([{ playerJoined: false }]);
-
-			if (ipaddress) {
-				ige.clusterClient.banIp({
-					ipaddress: ipaddress,
-					gameId: gameId,
-					userId: userId
-				});
-			}
 		}
 	},
 	_onMutePlayer: function ({ gameId, kickuserId }, clientId) {

@@ -24,7 +24,7 @@ var IgeNetIoServer = {
 		}
 
 		// Start net.io
-		console.log(`Starting net.io listener on port ${this._port}`);
+		console.log(`Game server listening on port ${this._port}`);
 		this._io = new this._netio(this._port, callback);
 
 		// Setup listeners

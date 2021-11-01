@@ -46,7 +46,6 @@ var IgeTiledComponent = IgeClass.extend({
 	_processData: function (data, callback) {
 		if (ige.isServer && (data == undefined || data.layers == undefined)) {
 			IgeTiledComponent.prototype.log('layer doesn\'t exist. unpublishing...');
-			ige.server.unpublish('IgeTiledComponent#51');
 		}
 
 		var mapClass = ige.isServer === true ? IgeTileMap2d : IgeTextureMap;
@@ -100,7 +99,6 @@ var IgeTiledComponent = IgeClass.extend({
 							.depth(i);
 					} else {
 						IgeTiledComponent.prototype.log('ERROR while loading map. Chris might have fixed this');
-						ige.server.unpublish('IgeTiledComponent#109');
 						return;
 					}
 

@@ -31,9 +31,7 @@ IgeMatrix2d.prototype = {
 
 		/* DEXCLUDE */
 		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
-			// ige.devLog('The matrix operation produced a NaN value!');
 			ige.script.errorLog('The matrix operation produced a NaN value!');
-			// ige.server.unpublish()
 		}
 		/* DEXCLUDE */
 

@@ -25,13 +25,6 @@ function logfile (file) {
 
 module.exports = logfile;
 
-Error.stackTraceLimit = Infinity; // debug console.trace() to infinite lines
-
-process.on('exit', function () {
-	console.log('process exit called.');
-	console.trace();
-});
-
 var Server = IgeClass.extend({
 	classId: 'Server',
 	Server: true,
@@ -47,8 +40,6 @@ var Server = IgeClass.extend({
 		self.totalItemsCreated = 0;
 		self.totalPlayersCreated = 0;
 		self.totalProjectilesCreated = 0;
-		self.retryCount = 0;
-		self.maxRetryCount = 3;
 		self.started_at = new Date();
 		self.lastSnapshot = [];
 
@@ -115,8 +106,7 @@ var Server = IgeClass.extend({
 	// start server
 	start: function () {
 		var self = this;
-		console.log('ip', self.ip);
-
+		
 		if (self.gameLoaded) {
 			console.log('Warning: Game already loaded in this server!!');
 			return;
@@ -131,41 +121,21 @@ var Server = IgeClass.extend({
 		var self = this;
 
 		return new Promise((resolve, reject) => {
-			setTimeout(() => {
-				self.retryCount++;
-
-				if (self.retryCount > self.maxRetryCount) {
-					return reject(new Error('Could not load game'));
-				}
-
-				request(`${gameUrl}&num=${self.retryCount}`, (error, response, body) => {
-					if (error) {
-						console.log('LOADING GAME-JSON ERROR', self.retryCount, error);
-						return self.loadGameJSON(gameUrl)
-							.then((data) => resolve(data))
-							.catch((err) => reject(err));
-					}
-
-					if (response.statusCode == 200) {
-						return resolve(JSON.parse(body));
-					} else {
-						console.log('LOADING GAME-JSON ERROR', self.retryCount, response.statusCode, body);
-						return self.loadGameJSON(gameUrl)
-							.then((data) => resolve(data))
-							.catch((err) => reject(err));
-					}
-				});
-			}, self.retryCount * 5000);
+			request(`${gameUrl}`, (error, response, body) => {
+				if (response.statusCode == 200) {
+					return resolve(JSON.parse(body));
+				} else {
+					console.log('LOADING GAME-JSON ERROR', response.statusCode, error, body);
+					self.kill();
+				} 
+			});
 		});
 	},
+
 	startServer: function () {
 		const app = express();
 		const port = 80; // http server port
-		this.port = 2001; // game server port
-
-		app.use(bodyParser.urlencoded({ extended: false }));
-		// parse application/json
-		app.use(bodyParser.json());
+		this.port = 2000; // game server port
 
 		app.set('view engine', 'ejs');
 		app.set('views', path.resolve('src'));
@@ -207,7 +177,7 @@ var Server = IgeClass.extend({
 				};
 				
 				const options = {
-					gameId: process.env.npm_config_game,
+					gameId: process.env.game,
 					user: {},
 					isOpenedFromIframe: false,
 					gameSlug: game.gameSlug,
@@ -227,7 +197,7 @@ var Server = IgeClass.extend({
 					selectedServer: null,
 					servers: [{
 						ip: '127.0.0.1',
-						port: 2001,
+						port: 2000,
 						playerCount: 0,
 						maxPlayers: 32,
 						acceptingPlayers: true
@@ -267,21 +237,15 @@ var Server = IgeClass.extend({
 			
 			
 		});
-		app.listen(port, () => console.log(`MC listening on port ${port}!`));
+		app.listen(port, () => console.log(`Web server listening on port ${port}!`));
 	},
 
 	// run a specific game in this server
-	startGame: function (gameJson) {
-		console.log('ige.server.startGame()');
+	startGame: function () {
 		var self = this;
 
-		if (self.gameLoaded) {
-			console.log('Warning: Game already loaded in this server!!');
-			return;
-		}
-
 		this.socket = {};
-
+		
 		self.url = `http://${self.ip}:${self.port}`;
 
 		this.duplicateIpCount = {};
@@ -291,26 +255,22 @@ var Server = IgeClass.extend({
 		this.maxPlayersAllowed = self.maxPlayers || 32;
 
 		console.log('maxPlayersAllowed', this.maxPlayersAllowed);
-		console.log('starting netIoServer at', self.url);
-
+		
 		// Define an object to hold references to our player entities
 		this.clients = {};
 
 		// Add the networking component
 		ige.network.debug(self.isDebugging);
-		// Start the network server
-		ige.network.start(self.port, function (data) {
-			console.log('IgeNetIoComponent: listening to', self.url);
 		
-			var promise;
-
-			if (gameJson) {
-				promise = Promise.resolve(gameJson);
-			} else if (ige.server.gameId) {
-				var gameUrl = `https://www.modd.io/api/game-client/${ige.server.gameId}/?source=gs`;
-				console.log('gameUrl', gameUrl);
+		// Start the network server
+		ige.network.start(self.port, function (data) {			
+			var promise;			
+			if (process.env.game) {
+				console.log(`loading the game data from modd.io at https://www.modd.io/api/game-client/${process.env.game}`)
+				var gameUrl = `https://www.modd.io/api/game-client/${process.env.game}/?source=gs`;
 				promise = self.loadGameJSON(gameUrl);
 			} else {
+				console.log('loading the game data from game.json file')
 				promise = new Promise(function (resolve, reject) {
 					var game = fs.readFileSync(`${__dirname}/../src/game.json`);
 					game = JSON.parse(game);
@@ -376,8 +336,7 @@ var Server = IgeClass.extend({
 				ige.start(function (success) {
 					// Check if the engine started successfully
 					if (success) {
-						console.log('IgeNetIoComponent started successfully');
-
+						
 						self.defineNetworkEvents();
 						// console.log("game data", ige.game.data.settings)
 
@@ -434,22 +393,11 @@ var Server = IgeClass.extend({
 							ige.unitBehaviourCount = 0;
 						}, 1000);
 
-						setInterval(function () {
-							var copyCount = Object.assign({}, self.socketConnectionCount);
-							self.socketConnectionCount = {
-								connected: 0,
-								disconnected: 0,
-								immediatelyDisconnected: 0
-							};
-
-							ige.clusterClient && ige.clusterClient.recordSocketConnections(copyCount);
-						}, 900000);
 					}
 				});
 			})
 				.catch((err) => {
 					console.log('got error while loading game json', err);
-					ige.clusterClient && ige.clusterClient.kill('got error while loading game json');
 				});
 		});
 	},
@@ -538,22 +486,14 @@ var Server = IgeClass.extend({
 		ige.network.define('trade', self._onTrade);
 	},
 
-	unpublish: function (from) {
-		console.log('unpublishing...');
-		ige.clusterClient.unpublish(from);
-		process.exit(0);
-	},
-
 	saveLastPlayedTime: function (data) {
 		console.log('temp', data);
 	},
 
 	kill: function (log) {
-		if (ige.clusterClient && ige.clusterClient.markedAsKilled) {
-			return;
-		}
-		
-		ige.clusterClient && ige.clusterClient.kill(log);
+		console.log("kill server called")
+		console.trace();
+		process.exit(0);
 	},
 
 	// get client with _id from BE

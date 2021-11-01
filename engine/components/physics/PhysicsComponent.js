@@ -273,10 +273,6 @@ var PhysicsComponent = IgeEventingClass.extend({
 	 * object data.
 	 */
 	staticsFromMap: function (mapLayer, callback) {
-		if (mapLayer == undefined) {
-			ige.server.unpublish('PhysicsComponent#51');
-		}
-
 		if (mapLayer.map) {
 			var tileWidth = ige.scaleMapDetails.tileWidth || mapLayer.tileWidth();
 			var tileHeight = ige.scaleMapDetails.tileHeight || mapLayer.tileHeight();

@@ -134,8 +134,8 @@ var Server = IgeClass.extend({
 
 	startServer: function () {
 		const app = express();
-		const port = 80; // http server port
-		this.port = 2000; // game server port
+		const webServerPort = 80; // http server port
+		this.gameServerPort = 2000; // game server port
 
 		app.set('view engine', 'ejs');
 		app.set('views', path.resolve('src'));
@@ -237,7 +237,7 @@ var Server = IgeClass.extend({
 			
 			
 		});
-		app.listen(port, () => console.log(`Web server listening on port ${port}!`));
+		app.listen(webServerPort, () => console.log(`Web server listening on `+ ((process.env.ssl == 'on')?'https://':'http://') +`localhost:${webServerPort}`));
 	},
 
 	// run a specific game in this server
@@ -246,7 +246,7 @@ var Server = IgeClass.extend({
 
 		this.socket = {};
 		
-		self.url = `http://${self.ip}:${self.port}`;
+		self.url = `http://${self.ip}:${self.gameServerPort}`;
 
 		this.duplicateIpCount = {};
 		this.bannedIps = [];
@@ -263,7 +263,7 @@ var Server = IgeClass.extend({
 		ige.network.debug(self.isDebugging);
 		
 		// Start the network server
-		ige.network.start(self.port, function (data) {			
+		ige.network.start(self.gameServerPort, function (data) {			
 			var promise;			
 			if (process.env.game) {
 				console.log(`loading the game data from modd.io at https://www.modd.io/api/game-client/${process.env.game}`)

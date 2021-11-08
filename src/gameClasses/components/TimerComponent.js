@@ -40,7 +40,7 @@ var TimerComponent = IgeEntity.extend({
 
 		if (ige.isServer) {
 			self.emptyTimeLimit = self.getTimeLimit();
-			self.startedAt = new Date(ige.server.startedOn);
+			self.startedAt = new Date();
 			console.log('initialized timer component', self.startedAt);
 			self.now = self.serverEmptySince = self.startedAt;
 		}

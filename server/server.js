@@ -240,8 +240,9 @@ var Server = IgeClass.extend({
 				ige.addComponent(GameComponent);
 				console.log("loading config.json");
 				ige.game.config = JSON.parse(fs.readFileSync('src/config.json', 'utf8'));
-				self.gameStartedAt = new Date();
+				console.log("game name:", ige.game.config.name)
 
+				self.gameStartedAt = new Date();
 				ige.game.data = game.data;
 				ige.game.cspEnabled = !!ige.game.data.defaultData.clientSidePredictionEnabled;
 

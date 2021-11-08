@@ -587,31 +587,7 @@ var Client = IgeClass.extend({
         if (ige.mobileControls && !ige.mobileControls.isMobile) {
             $(".game-ui").show();
         }
-
-        // try loading an ad to find out whether adblocker is active or not
-        if (window.isStandalone) {
-            isAdBlockEnabled = false;
-            if (typeof adBlockStatus === "function")
-                adBlockStatus(false);
-        }
-        else {
-            $.ajax('/showads.js', {
-                async: false,
-                success: function () {
-                    isAdBlockEnabled = false;
-                    adBlockStatus(false);
-                },
-                fail: function () {
-                    adBlockStatus(true);
-                }
-            });
-
-            // notify for ad block
-            if (window.adBlockEnabled) {
-                notifyAboutAdblocker();
-            }
-        }
-
+        
         //show popover on setting icon for low frame rate
         if (!ige.mobileControls.isMobile) {
             setTimeout(function () {
@@ -628,27 +604,14 @@ var Client = IgeClass.extend({
             $('#setting').popover('hide');
         })
 
-        data.isAdBlockEnabled = !!isAdBlockEnabled
-
         ige.network.send('joinGame', data);
-
         window.joinGameSent.start = Date.now();
-
         console.log("joinGame sent");
 
         // if game was paused
         if (!window.playerJoined) {
             ige.client.eventLog.push([0, "joinGame sent. userId " + userId])
             ige.client.eventLogStartTime = ige._currentTime;
-
-            // disable eventlog timer
-            // window.errorLogTimer = setTimeout(function () {
-            //     var list = ige.client.eventLog.reduce(function (p, e) {
-            //         return p + "<li>" + JSON.stringify(e) + "</li>";
-            //     }, '');
-            //     $('#event-logs-content').html("<ul>" + list + "</ul>");
-            //     $('#event-logs-modal').modal('show');
-            // }, 12000);
         }
     },
 

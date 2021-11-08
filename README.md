@@ -42,15 +42,15 @@ Node Versions below [14](https://nodejs.org) are not supported due to package in
 ## Running a game server
 Taro engine will run games made using [modd.io](https://www.modd.io).
 
-To run the game server, execute the following command:
-```
-npm run server --game=<gameID>
-```
-*if the gameID argument is not provided, then the engine will use game.json stored in root directory instead.
-
-Your game's Game ID can be found in your modd.io's game's sandbox ([example](https://beta.modd.io/sandbox/game/two-houses/scripts)). Go to menu -> about.
-
+To run the game server, first, open /src/config.json file
+and make sure the gameID is set correctly. Your game's Game ID can be found in your modd.io's game's sandbox ([example](https://beta.modd.io/sandbox/game/two-houses/scripts)). Go to menu -> about.
 <img src="./assets/images/gameid.png" width="600" alt="How to get game id">
+If the gameID is not provided, then the engine will use game.json stored in root directory instead.
+
+Once config is set, execute the following command:
+```
+npm run dev
+```
 
 ## Quick start example - Run "Two Houses" locally
 

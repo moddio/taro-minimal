@@ -125,9 +125,9 @@ NetIo.Client = NetIo.EventingClass.extend({
 				this._lastSentUpdated = now;
 				this._sentBytesSinceLastUpdate = 0;
 				// plot against 2x all time average
-				if (statsPanels.sent) {
-					statsPanels.sent._sentPanel.update(this._sendRate, this._averageSendRate * 2);
-				}
+				// if (statsPanels.sent) {
+				// 	statsPanels.sent._sentPanel.update(this._sendRate, this._averageSendRate * 2);
+				// }
 			}
 		} else {
 			this.disconnect();

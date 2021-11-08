@@ -97,7 +97,7 @@ var Unit = IgeEntityBox2d.extend({
 			// store mapping between clientIds (to whom minimap unit of this unit is visible)
 			// and their respective color because sometimes it may happen that unit is not yet created on client
 			// hence while making its minimap unit we will get null as unit
-			self._stats.minimapUnitVisibleToClients = {};
+			// self._stats.minimapUnitVisibleToClients = {};
 
 			self.mount(ige.$('baseScene'));
 			self.streamMode(1);
@@ -118,16 +118,12 @@ var Unit = IgeEntityBox2d.extend({
 					ige.playerUi.updateAttrBar(i, self.attr[i], self.max[i]);
 				}
 
-				self.showMinimapUnit();
-
-				if (window.adBlockEnabled) {
-					// self.unEquipSkin(null, true);
-				}
+				// self.showMinimapUnit();
 			}
 
-			if (self._stats.minimapUnitVisibleToClients && self._stats.minimapUnitVisibleToClients[networkId]) {
-				self.showMinimapUnit(self._stats.minimapUnitVisibleToClients[networkId]);
-			}
+			// if (self._stats.minimapUnitVisibleToClients && self._stats.minimapUnitVisibleToClients[networkId]) {
+			// 	self.showMinimapUnit(self._stats.minimapUnitVisibleToClients[networkId]);
+			// }
 
 			self._scaleTexture();
 
@@ -136,7 +132,6 @@ var Unit = IgeEntityBox2d.extend({
 
 			self.redrawAttributeBars();
 			self.flip(self._stats.flip);
-			self.mouseEvents();
 		}
 		self.playEffect('create');
 		self.addBehaviour('unitBehaviour', self._behaviour);
@@ -1362,10 +1357,10 @@ var Unit = IgeEntityBox2d.extend({
 				self.fadingTextContainer.destroy();
 			}
 
-			if (self.minimapUnit) {
-				self.minimapUnit.destroy();
-				delete self.minimapUnit;
-			}
+			// if (self.minimapUnit) {
+			// 	self.minimapUnit.destroy();
+			// 	delete self.minimapUnit;
+			// }
 		} else if (ige.isServer) {
 			// destroy all items in inventory
 			for (var i = 0; i < self._stats.itemIds.length; i++) {
@@ -1531,10 +1526,10 @@ var Unit = IgeEntityBox2d.extend({
 	},
 
 	showMinimapUnit: function (color) {
-		var self = this;
+		// var self = this;
 
-		self.hideMinimapUnit();
-		self.minimapUnit = new MiniMapUnit(color);
+		// self.hideMinimapUnit();
+		// self.minimapUnit = new MiniMapUnit(color);
 	},
 
 	// apply texture based on state
@@ -1626,11 +1621,11 @@ var Unit = IgeEntityBox2d.extend({
 	},
 
 	hideMinimapUnit: function () {
-		var self = this;
+		// var self = this;
 
-		if (self.minimapUnit) {
-			self.minimapUnit.destroy();
-		}
+		// if (self.minimapUnit) {
+		// 	self.minimapUnit.destroy();
+		// }
 	},
 
 	// Parth what does this do? -- Jaeyun
@@ -1805,7 +1800,7 @@ var Unit = IgeEntityBox2d.extend({
 		if (ige.isClient) {
 			// make minimap unit follow the unit
 			if (self.minimapUnit) {
-				self.minimapUnit.translateTo(self._translate.x, self._translate.y, 0);
+				// self.minimapUnit.translateTo(self._translate.x, self._translate.y, 0);
 			}
 
 			if (this.isPlayingSound) {

@@ -595,25 +595,25 @@ var ClientNetworkEvents = {
 		}
 	},
 
-	_onMinimapEvent: function (data) {
-		if (data) {
-			switch (data.type) {
-				case 'showUnit':
-					var unit = ige.$(data.unitId);
-					if (unit) {
-						unit.showMinimapUnit(data.color);
-					}
-					break;
+	// _onMinimapEvent: function (data) {
+	// 	if (data) {
+	// 		switch (data.type) {
+	// 			case 'showUnit':
+	// 				var unit = ige.$(data.unitId);
+	// 				if (unit) {
+	// 					unit.showMinimapUnit(data.color);
+	// 				}
+	// 				break;
 
-				case 'hideUnit':
-					var unit = ige.$(data.unitId);
-					if (unit) {
-						unit.hideMinimapUnit();
-					}
-					break;
-			}
-		}
-	}
+	// 			case 'hideUnit':
+	// 				var unit = ige.$(data.unitId);
+	// 				if (unit) {
+	// 					unit.hideMinimapUnit();
+	// 				}
+	// 				break;
+	// 		}
+	// 	}
+	// }
 };
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {

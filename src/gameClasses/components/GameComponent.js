@@ -17,17 +17,24 @@ var GameComponent = IgeEntity.extend({
 		this.isGameStarted = false;
 	},
 
+	loadConfig: function() {
+		var config = {};
+		if (ige.isServer) {
+			
+		} else {
+
+		}
+
+	},
+
 	start: function () {
 		var self = this;
 		GameComponent.prototype.log('Game component started');
 		if (ige.isServer) {
 			ige.chat.createRoom('lobby', {}, '1');
 
-			// by default, create 5 computer players
+			// by default, create 10 computer players
 			var aiCount = 10;
-			// if (global.isDev) {
-			// 	var aiCount = 50 // create 50 ai players if dev env
-			// }
 
 			for (var i = 1; i <= aiCount; i++) {
 				this[`computer${i}`] = this.createPlayer({
@@ -36,10 +43,6 @@ var GameComponent = IgeEntity.extend({
 					unitIds: [] // all units owned by player
 				});
 
-				// GameComponent.prototype.log("computerPlayer created " + this['computer' + i].id())
-				// if (global.isDev) {
-				// 	ige.trigger.fire("playerJoinsGame", { playerId: this['computer'+i].id() })
-				// }
 			}
 			ige.trigger.fire('gameStart');
 		} else if (ige.isClient) {
@@ -47,8 +50,8 @@ var GameComponent = IgeEntity.extend({
 			var attr = 'points';
 			if (
 				ige.game.data.settings &&
-        ige.game.data.settings.constants &&
-        ige.game.data.settings.constants.currency != undefined
+				ige.game.data.settings.constants &&
+				ige.game.data.settings.constants.currency != undefined
 			) {
 				attr = ige.game.data.settings.constants.currency;
 			}
@@ -160,12 +163,11 @@ var GameComponent = IgeEntity.extend({
 		if (clientIds.length > 0) {
 			var method = all ? 'filter' : 'find';
 			return ige.$$('player')[method](player => {
-				// var clientId = player && player._stats && player._stats.clientId;
 				// added currentUserId check to confirm it is logged in user and not add-instance bot.
 				return (
 					player._stats &&
-          clientIds.includes(player._stats.clientId) &&
-          (all || (currentUserId && player._stats.userId != currentUserId))
+					clientIds.includes(player._stats.clientId) &&
+					(all || (currentUserId && player._stats.userId != currentUserId))
 				);
 			});
 		}
@@ -206,6 +208,8 @@ var GameComponent = IgeEntity.extend({
 			);
 		}
 	},
+
+	// this shouldn't be inside gamecomponent! who added this?! - Jaeyun Oct 2021
 	secondsToHms: function (seconds) {
 		seconds = Number(seconds);
 		var h = Math.floor(seconds / 3600);

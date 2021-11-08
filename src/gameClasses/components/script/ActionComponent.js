@@ -579,7 +579,7 @@ var ActionComponent = IgeEntity.extend({
 						if (player && unit && unit._category === 'unit' && player._stats && player._stats.clientId) {
 							var clientId = player._stats.clientId;
 
-							unit._stats.minimapUnitVisibleToClients[clientId] = color;
+							// unit._stats.minimapUnitVisibleToClients[clientId] = color;
 
 							ige.network.send('minimap', {
 								type: 'showUnit',
@@ -598,7 +598,7 @@ var ActionComponent = IgeEntity.extend({
 						if (player && unit && unit._category === 'unit' && player._stats && player._stats.clientId) {
 							var clientId = player._stats.clientId;
 
-							delete unit._stats.minimapUnitVisibleToClients[clientId];
+							// delete unit._stats.minimapUnitVisibleToClients[clientId];
 
 							ige.network.send('minimap', {
 								type: 'hideUnit',
@@ -1964,7 +1964,6 @@ var ActionComponent = IgeEntity.extend({
 					case 'createEntityForPlayerAtPositionWithDimensions':
 					case 'createEntityAtPositionWithDimensions':
 
-						let isSandbox = typeof mode === 'string' && mode === 'sandbox';
 						let entityType = ige.variable.getValue(action.entityType, vars);
 						let entityToCreate = ige.variable.getValue(action.entity, vars);
 						var position = ige.variable.getValue(action.position, vars);
@@ -2031,13 +2030,9 @@ var ActionComponent = IgeEntity.extend({
 									scaleDimensions: true
 								});
 
-								if (isSandbox) {
-									createdEntity = new Unit(data);
-								} else {
-									var player = ige.variable.getValue(action.player, vars);
-									if (player) {
-										createdEntity = player.createUnit(_.cloneDeep(data));
-									}
+								var player = ige.variable.getValue(action.player, vars);
+								if (player) {
+									createdEntity = player.createUnit(_.cloneDeep(data));
 								}
 								ige.game.lastCreatedUnitId = createdEntity._id;
 							}
@@ -2052,10 +2047,7 @@ var ActionComponent = IgeEntity.extend({
 								height: height,
 								width: width
 							};
-							if (isSandbox) {
-								if (!ige.game.createdEntities) ige.game.createdEntities = [];
-								ige.game.createdEntities.push(createdEntity);
-							}
+							
 						}
 						break;
 					case 'setEntityDepth':

@@ -177,60 +177,10 @@ var Server = IgeClass.extend({
 				};
 				
 				const options = {
-					gameId: process.env.game,
-					user: {},
-					isOpenedFromIframe: false,
-					gameSlug: game.gameSlug,
-					referAccessDenied: true,
-					ads: false,
-					showSideBar: false,
-					gameDetails: {
-						name: game.title,
-						tier: game.tier,
-						gameSlug: game.gameSlug,
-						videoChatEnabled: game.videoChatEnabled
-					},
-					highScores: null,
-					hostedGames: null,
-					currentUserScore: null,
-					err: undefined,
-					selectedServer: null,
-					servers: [{
-						ip: '127.0.0.1',
-						port: 2000,
-						playerCount: 0,
-						maxPlayers: 32,
-						acceptingPlayers: true
-					}],
-					menudiv: false,
-					gameTitle: game.title,
-					currentUserPresentInHighscore: false,
-					discordLink: null,
-					facebookLink: null,
-					twitterLink: null,
-					youtubeLink: null,
-					androidLink: null,
-					iosLink: null,
-					share: {
-						url: ''
-					},
-					domain: req.get('host'),
-					version: Math.floor((Math.random() * 10000000) + 1),
-					constants: {
-						appName: 'Modd.io   ',
-						appUrl: 'http://www.modd.io/',
-						noAds: true,
-						assetsProvider: ''
-					},
-					purchasables: null,
-					timers: {
-						smallChest: 0,
-						bigChest: 0
-					},
-					ssl: process.env.ssl,
-					env: process.env.env,
-					analyticsUrl: '/'
-				};
+					"ssl": process.env.ssl,
+    				"env": process.env.env,
+					videoChatEnabled: game.videoChatEnabled
+				}
 
 				return res.render('index.ejs', options);
 			}
@@ -288,6 +238,8 @@ var Server = IgeClass.extend({
 
 			promise.then((game) => {
 				ige.addComponent(GameComponent);
+				console.log("loading config.json");
+				ige.game.config = JSON.parse(fs.readFileSync('src/config.json', 'utf8'));
 				self.gameStartedAt = new Date();
 
 				ige.game.data = game.data;

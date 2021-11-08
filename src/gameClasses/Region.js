@@ -54,48 +54,7 @@ var Region = IgeEntityBox2d.extend({
 			if (ige.isServer) {
 				self.streamMode(1);
 			} else if (ige.isClient) {
-				if (typeof mode === 'string' && mode === 'sandbox') {
-					delete self._stats.value;
-				}
-
 				self.regionUi = new RegionUi(JSON.parse(JSON.stringify(self._stats)), regionName, this);
-
-				// self.regionUi.depth(10)
-				//     .layer(2)
-				//     .drawBoundsData(false)
-				//     .drawBounds(false)
-				//     .translateTo(self._stats.default.x + (self._stats.default.width / 2), self._stats.default.y + (self._stats.default.height / 2), 0)
-				//     .height(self._stats.default.height)
-				//     .width(self._stats.default.width)
-				//     .bounds2d(self._stats.default.width, self._stats.default.height, 0)
-				// .mount(ige.client.rootScene);
-
-				if (mode === 'sandbox') {
-					self.font = new FloatingText(regionName);
-					self.font.colorOverlay('#fff')
-						.translateTo(self._stats.default.x, self._stats.default.y, 0)
-						.mount(ige.client.rootScene)
-						.drawBounds(false);
-
-					if (ige.game.data.isDeveloper) {
-						// creating region click handler if user is developer
-						self.regionUi
-							.drawMouse(true)
-							.mouseDown(function (event, evc) {
-								if (
-									ige.mapEditor.selectEntities &&
-                                    event.which === 1 &&
-                                    !ige.mapEditor.mouseDownOnMiniMap &&
-                                    !ige.mapEditor.checkIfClickedMiniMap(event.pageX, event.pageY)
-								) {
-									var selectedRegion = self;
-									if (selectedRegion._stats && selectedRegion._stats.id) {
-										ige.regionManager.openRegionModal(selectedRegion._stats, selectedRegion._stats.id, false);
-									}
-								}
-							});
-					}
-				}
 			}
 		}
 	},

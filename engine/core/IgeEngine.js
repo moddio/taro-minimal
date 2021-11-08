@@ -660,9 +660,6 @@ var IgeEngine = IgeEntity.extend({
 			} else {
 				// Client-side implementation
 				window.requestAnimFrame = function (callback, element) {
-					if (typeof mode === 'string' && mode === 'sandbox') {
-						fpsRate = 20;
-					}
 					setTimeout(function () { callback(new Date().getTime()); }, 1000 / fpsRate); // client will always run at 60 fps.
 				};
 			}
@@ -1891,12 +1888,12 @@ var IgeEngine = IgeEntity.extend({
 	 * Called each frame to traverse and render the scenegraph.
 	 */
 	engineStep: function (timeStamp, ctx) {
-		if (ige.isClient) {
-			if (statsPanels.ms) {
-				statsPanels.ms.begin();
-				statsPanels.fps.begin();
-			}
-		}
+		// if (ige.isClient) {
+		// 	if (statsPanels.ms) {
+		// 		statsPanels.ms.begin();
+		// 		statsPanels.fps.begin();
+		// 	}
+		// }
 		/* TODO:
 			Make the scenegraph process simplified. Walk the scenegraph once and grab the order in a flat array
 			then process updates and ticks. This will also allow a layered rendering system that can render the
@@ -2158,7 +2155,7 @@ var IgeEngine = IgeEntity.extend({
 		// console.log(ige._tickTime, ige._tickTime, 1000/self._fpsRate)
 
 		// slow engineTick restart only works on two houses (Braains.io)
-		if (ige.server && ige.server.gameId == '5a7fd59b1014dc000eeec3dd')
+		if (ige.server)
 			// restart server if physics engine is running slow as this will cause laggy experience for the players
 			if (ige._tickTime > 1000 / self._fpsRate) {
 				self.lagOccurenceCount++;
@@ -2176,12 +2173,12 @@ var IgeEngine = IgeEntity.extend({
 
 		// }
 
-		if (ige.isClient) {
-			if (statsPanels.ms) {
-				statsPanels.fps.end();
-				statsPanels.ms.end();
-			}
-		}
+		// if (ige.isClient) {
+		// 	if (statsPanels.ms) {
+		// 		statsPanels.fps.end();
+		// 		statsPanels.ms.end();
+		// 	}
+		// }
 	},
 
 	updateSceneGraph: function (ctx) {

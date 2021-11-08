@@ -35,7 +35,6 @@ var igeClientConfig = {
 		'/gameClasses/components/ui/ItemUiComponent.js',
 		'/gameClasses/components/ui/AdComponent.js',
 		'/gameClasses/components/ui/DevConsoleComponent.js',
-		'/gameClasses/components/ui/MapEditorComponent.js',
 		'/gameClasses/components/ui/MapPanComponent.js',
 		'/gameClasses/components/ui/UnitUiComponent.js',
 		'/gameClasses/components/ui/VideoChatComponent.js',

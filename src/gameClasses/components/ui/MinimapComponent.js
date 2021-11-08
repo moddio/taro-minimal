@@ -66,7 +66,7 @@ var MiniMapComponent = IgeEntity.extend({
 
 	createUnit: function (id) {
 		var self = this;
-		self.units[id] = new MiniMapUnit();
+		// self.units[id] = new MiniMapUnit();
 	},
 	translateTo: function (id, x, y, z) {
 		var self = this;

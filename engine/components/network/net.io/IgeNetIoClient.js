@@ -24,34 +24,18 @@ var IgeNetIoClient = {
 	 * @param {Function=} callback A callback method to call once the
 	 * network has started.
 	 */
-	start: function (server, callback) {
+	start: function (url, callback) {
 		this.artificialDelay = 0;
 		this.lagVariance = 0;
 
 		var self = this;			
 		self._startCallback = callback;
-
-		var sortedServers = [server];
 		
-		sortedServers.reduce(function (p, server) {
-			var defer = $.Deferred();
-
-			p.then(function () {
-				// console.log(server, self._state);
-				// if client's is not connected yet
-				url = server.url;
-				
-				window.connectedServer = server;
-
-				if (typeof (WebSocket) !== 'undefined') {
-					self.connectToGS(url)							
-				} else {
-					defer.reject('websockets are not available');
-				}
-			});
-			
-			return defer;
-		}, $.when())
+		if (typeof (WebSocket) !== 'undefined') {
+			self.connectToGS(url)							
+		} else {
+			defer.reject('websockets are not available');
+		}
 	},
 
 	/**

@@ -17,7 +17,7 @@ var IgeInitPixi = IgeClass.extend({
 			transparent: false, // default: false
 			resolution: 1, // default: 1,
 			autoResize: true,
-			forceCanvas: forceCanvas[gameId] || false
+			forceCanvas: forceCanvas[ige.game.config.gameId] || false
 			// backgroundColor: 0xff00cc,
 		});
 		this.app.ticker.maxFPS = 60;

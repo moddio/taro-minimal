@@ -14,30 +14,6 @@ var MapComponent = IgeEntity.extend({
 			walls: 3,
 			trees: 4
 		};
-		if (ige.isClient) {
-			// Declared events for debris modal
-			if (mode === 'sandbox') {
-				$('#debris-form').on('submit', function (e) {
-					e.preventDefault();
-					self.onSubmit();
-				});
-
-				$('#debris-form').on('keypress', function (e) {
-					if (e.charCode === 13) {
-						e.preventDefault();
-						self.onSubmit();
-					}
-				});
-
-				$('#debris-delete').on('click', function (e) {
-					e.preventDefault();
-					var updatedDebris = {
-						deleteId: $('#debris-id').val()
-					};
-					self.updateDebrisToDb(updatedDebris);
-				});
-			}
-		}
 	},
 
 	load: function (data) {
@@ -73,11 +49,11 @@ var MapComponent = IgeEntity.extend({
 					var mapArray = layersById.floor.map._gameData;
 
 					// create debris
-					if (layersById.debris != undefined && (ige.isServer || mode === 'sandbox')) {
+					if (layersById.debris != undefined && (ige.isServer)) {
 						self.debrisLayer = layersById.debris.objects;
 						self.createDebris(layersById.debris.objects);
 					}
-					if (ige.isServer || mode === 'sandbox') {
+					if (ige.isServer) {
 						self.createRegions();
 					}
 
@@ -88,21 +64,7 @@ var MapComponent = IgeEntity.extend({
 							// We can add all our layers to our main scene by looping the
 							// array or we can pick a particular layer via the layersById
 							// object. Let's give an example:
-							if (mode === 'sandbox') {
-								var mapHeight = ige.game.data.map.height * ige.game.data.map.tileheight;
-								var mapWidth = ige.game.data.map.width * ige.game.data.map.tilewidth;
-								var region = new RegionUi({ height: mapHeight, width: mapWidth });
-								region.depth(3)
-									.layer(3)
-									.drawBoundsData(false)
-									.drawBounds(false)
-									.mount(ige.client.rootScene)
-									.translateTo(0 + (mapWidth / 2), 0 + (mapHeight / 2), 0)
-									.height(mapHeight)
-									.width(mapWidth)
-									.bounds2d(mapWidth, mapHeight, 0);
-							}
-
+							
 							if (layerArray[i].name !== 'debris') {
 								ige.devLog(`layer ${i}`);
 								layerArray[i]
@@ -135,20 +97,6 @@ var MapComponent = IgeEntity.extend({
 							// We can add all our layers to our main scene by looping the
 							// array or we can pick a particular layer via the layersById
 							// object. Let's give an example:
-							if (mode === 'sandbox') {
-								var mapHeight = ige.game.data.map.height * ige.game.data.map.tileheight;
-								var mapWidth = ige.game.data.map.width * ige.game.data.map.tilewidth;
-								var region = new RegionUi({ height: mapHeight, width: mapWidth });
-								region.depth(3)
-									.layer(3)
-									.drawBoundsData(false)
-									.drawBounds(false)
-									.mount(ige.client.rootScene)
-									.translateTo(0 + (mapWidth / 2), 0 + (mapHeight / 2), 0)
-									.height(mapHeight)
-									.width(mapWidth)
-									.bounds2d(mapWidth, mapHeight, 0);
-							}
 							ige.client.mapLoaded.resolve();
 						});
 				});
@@ -217,25 +165,6 @@ var MapComponent = IgeEntity.extend({
 			var debris = new Debris(original);
 
 			debrisLayer[i].igeId = debris.id(); // for future reference for script's conditional checks (e.g. if debrisVariable == triggeringDebris)
-
-			if (ige.isClient && typeof mode === 'string' && mode === 'sandbox') {
-				debris
-					.mount(ige.client.rootScene)
-					.drawBoundsData(false);
-				if (ige.game.data.isDeveloper) {
-					debris.drawMouse(true)
-						.mouseDown(function (event, evc) {
-							var isMiniMapClicked = ige.mapEditor.checkIfClickedMiniMap(event.pageX, event.pageY);
-
-							if (!$('#eraser').hasClass('editordiv-hover') &&
-								!$('#brush').hasClass('editordiv-hover') &&
-								!$('#add_region').hasClass('editordiv-hover') &&
-								event.which === 1 && !isMiniMapClicked) {
-								this.openDebrisModal();
-							}
-						});
-				}
-			}
 		}
 	},
 	onSubmit: function () {

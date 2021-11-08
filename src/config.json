@@ -1,0 +1,16 @@
+{
+    "gameId": "5a7fd59b1014dc000eeec3dd",
+    "gameDetails": {
+        "name": "test game"
+    },
+    "minimapEnabled": false,
+    "servers": [
+        {
+            "ip": "127.0.0.1",
+            "port": 2000,
+            "playerCount": 0,
+            "maxPlayers": 32,
+            "acceptingPlayers": true
+        }
+    ]
+}

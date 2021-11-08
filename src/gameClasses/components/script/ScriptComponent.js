@@ -55,7 +55,7 @@ var ScriptComponent = IgeEntity.extend({
 
 	getScriptActions: function (scriptId, timings) {
 		var self = this;
-		if (self.scriptCache[scriptId] && (typeof mode === 'undefined' || (typeof mode === 'string' && mode != 'sandbox'))) {
+		if (self.scriptCache[scriptId] && (typeof mode === 'undefined' || (typeof mode === 'string'))) {
 			return self.scriptCache[scriptId];
 		} else {
 			var script = ige.game.data.scripts[scriptId];

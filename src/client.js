@@ -1,8 +1,6 @@
-showMiniMap = false;
 showAllLayers = false;
 curLayerPainting = "floor";
-var mouseIsDown = false;
-var curSelectedTileIndex;
+
 $(document).mousedown(function () {
     mouseIsDown = true;
 }).mouseup(function () {
@@ -10,11 +8,6 @@ $(document).mousedown(function () {
 });
 
 var statsPanels = {};
-
-// minimap is disabled for BETA
-// if ((typeof gameId !== 'undefined') && (gameId != "") && (mode == 'sandbox')) {
-//     showMiniMap = true;
-// }
 
 var Client = IgeClass.extend({
     classId: 'Client',
@@ -24,7 +17,6 @@ var Client = IgeClass.extend({
         var self = this;
         self.data = [];
         self.previousScore = 0;
-        self.host = window.isStandalone ? 'https://www.modd.io' : '';
         self.loadedTextures = {};
 
         console.log("var getUrl ", window.location.hostname)
@@ -35,14 +27,13 @@ var Client = IgeClass.extend({
 
         pathArray = window.location.href.split('/');
        
-        self.igeEngineStarted = $.Deferred();
+        self.scenesLoaded = $.Deferred();
+        self.configLoaded = $.Deferred();
         self.mapLoaded = $.Deferred();
         self.mapRenderEnabled = true;
         self.unitRenderEnabled = true;
         self.itemRenderEnabled = true;
         self.uiEntityRenderEnabled = true;
-        self.miniMapLoaded = $.Deferred();
-        self.miniMapEnabled = false;
         self.clearEveryFrame = true;
         self.cameraEnabled = true;
         self.ctxAlphaEnabled = true;
@@ -56,23 +47,6 @@ var Client = IgeClass.extend({
         self.eventLog = [];
 
         self.fontTexture = new IgeFontSheet('/assets/fonts/verdana_12pt.png');
-
-        if (SSL) {
-            var protocol = 'wss://'
-        } else {
-            var protocol = 'ws://'
-        }
-        self.servers = [
-            {
-                port: 2000,
-                playerCount: 0,
-                maxPlayers: 32,
-                acceptingPlayers: true,
-                gameId: gameId,
-                url: protocol+window.location.hostname+':2000'
-                // url: 'ws://149.28.182.110:2000'
-            }
-        ];
 
         self.cellSheets = {};
         self.allowTickAndUpdate = [
@@ -101,15 +75,10 @@ var Client = IgeClass.extend({
             "baseSpeed", "bonusSpeed", "controls"
         ];
 
-
         self.tradeOffers = [undefined, undefined, undefined, undefined, undefined]
 
         self.implement(ClientNetworkEvents);
-
-        //	ige.addComponent(IgeEditorComponent);
-        ige.addComponent(IgeInitPixi);
-        self.startIgeEngine()
-
+        
         //register error log modal btn;
         $('#dev-error-button').on('click', function () {
             $('#error-log-modal').modal('show');
@@ -138,159 +107,29 @@ var Client = IgeClass.extend({
             })
         }
 
-        console.log("client box2d world started")
         // components required for client side game logic
-        // Add physics and setup physics world
         ige.addComponent(GameComponent);
-        ige.addComponent(IgeNetIoComponent);
-        ige.addComponent(SoundComponent);
-        ige.addComponent(MapComponent);
+        
+        self.loadConfig();
+        self.loadScenes();
 
-
-        ige.addComponent(MenuUiComponent);
-        ige.addComponent(TradeUiComponent);
-        ige.addComponent(MobileControlsComponent);
-        if (mode === 'play') {
-            setTimeout(function () {
-                console.log('loading removed')
-                $('#loading-container').addClass('slider-out');
-            }, 2000);
-        }
-        $.when(self.igeEngineStarted).done(function () {
-
-            // SANDBOX mode
-            if (typeof mode == 'string' && mode == 'sandbox') {
-
-                $.ajax({
-                    url: '/api/game-client/' + gameId,
-                    dataType: "json",
-                    type: 'GET',
-                    success: function (game) {
-                        ige.game.data = game.data;
-                        // load map
-                        var gameMap = ige.scaleMap(game.data.map);
-
-                        ige.map.load(gameMap);
-
-                        var baseTilesize = 64;
-                        var tilesizeRatio = baseTilesize / ige.game.data.map.tilewidth;
-                        ige.physics.tilesizeRatio(tilesizeRatio)
-
-                        //close loading screen in 4 second;
-                        setTimeout(function () {
-                            $('#loading-container').addClass('slider-out');
-                        }, 4000);
-
-                        $.when(self.mapLoaded)
-                            .done(function () {
-
-                                ige.mapEditor.scanMapLayers()
-                                ige.mapEditor.drawTile();
-                                ige.mapEditor.addUI()
-                                ige.mapEditor.customEditor()
-                                if (!ige.game.data.isDeveloper) {
-                                    ige.mapEditor.selectEntities = false;
-                                }
-                                ige.setFps(15);
-                                $('#loading-container').addClass('slider-out');
-                            })
-                            .fail(function (err) {
-                                $('#loading-container').addClass('slider-out');
-                            })
-
-                    }
-                })
-            } else {
-                var params = self.getUrlVars()
-                self.serverFound = false;
-                if (!window.isStandalone) {
-                    self.servers = self.getServersArray();
-                }
-                self.preSelectedServerId = params.serverId;
-
-                if (self.preSelectedServerId) {
-                    for (var serverObj of self.servers) {
-                        // pre-selected server found! (via direct url)
-                        if (serverObj.id == self.preSelectedServerId) {
-                            console.log("pre-selected server found. connecting..")
-                            self.serverFound = true
-                            self.server = serverObj;
-                            break;
-                        }
-                    }
-                }
-
-                if (!self.server) {
-                    var bestServer = self.getBestServer();
-
-                    if (bestServer) {
-                        self.server = bestServer;
-                        self.serverFound = true;
-                    }
-                }
-                $('#server-list').val(self.server.id)
-                console.log('best server selected', self.server)
-
-                self.initEngine();
-            }
+        $.when(self.configLoaded, self.scenesLoaded).done(function () {
+            self.loadGame();
         })
     },
 
-    getServersArray: function () {
-        var serversList = [];
-        var serverOptions = $("#server-list > option").toArray();
-
-        serverOptions.forEach(function (serverOption) {
-
-            var server = {
-                playerCount: parseInt($(serverOption).attr('player-count')),
-                maxPlayers: parseInt($(serverOption).attr('max-players')),
-                owner: $(serverOption).attr('owner'),
-                url: $(serverOption).attr('data-url'),
-                gameId: gameId,
-                id: $(serverOption).attr('value')
-            };
-
-            serversList.push(server);
-        });
-
-        return serversList;
-    },
-
-    getBestServer: function (ignoreServerIds) {
-        var self = this;
-        var firstChoice = null; // server which has max players and is under 80% capacity
-        var secondChoice = null;
-        var validServers = self.servers.filter(function (server) {
-            return !ignoreServerIds || ignoreServerIds.indexOf(server.id) === -1;
-        });
-
-        // max number of players for a server which is under 80% of its capacity
-        var overloadCriteria = 0.8;
-        var maxPlayersInUnderLoadedServer = 0;
-        var minPlayerCount = Number.MAX_SAFE_INTEGER;
-
-        for (var server of validServers) {
-            var capacity = server.playerCount / server.maxPlayers;
-
-            if (capacity < overloadCriteria && server.playerCount > maxPlayersInUnderLoadedServer) {
-                firstChoice = server;
-                maxPlayersInUnderLoadedServer = server.playerCount;
-            }
-
-            if (server.playerCount < minPlayerCount) {
-                secondChoice = server;
-                minPlayerCount = server.playerCount;
-            }
-        }
-
-        return firstChoice || secondChoice;
-    },
-
-    startIgeEngine: function () {
+    loadConfig: function () {
         var self = this;
 
-        // ige.createFrontBuffer(true);
+        $.getJSON("./src/config.json", function(data) {
+            ige.game.config = data;
+            console.log("config.json loaded")
+            self.configLoaded.resolve();
+        });   
+    },
+
+    loadScenes: function () {
+        var self = this;
 
         // when all textures have loaded
         ige.on('texturesLoaded', function () {
@@ -298,25 +137,10 @@ var Client = IgeClass.extend({
             ige.start(function (success) {
                 // Check if the engine started successfully
                 if (success) {
-                    console.log("textures loaded")
-
                     self.rootScene = new IgeScene2d().id('rootScene').drawBounds(false);
-
-                    self.minimapScene = new IgeScene2d().id('minimapScene').drawBounds(false);
-
                     self.tilesheetScene = new IgeScene2d().id('tilesheetScene').drawBounds(true).drawMouse(true);
-
                     self.mainScene = new IgeScene2d().id('baseScene').mount(self.rootScene).drawMouse(true);
-
                     self.objectScene = new IgeScene2d().id('objectScene').mount(self.mainScene)
-
-                    if (typeof mode == 'string' && mode == 'sandbox') {
-                        ige.addComponent(MapEditorComponent)
-                        ige.mapEditor.createMiniMap();
-                    } else if (typeof mode === 'string' && mode == 'play') {
-                        ige.addComponent(MiniMapComponent)
-                        ige.addComponent(MiniMapUnit);
-                    }
                     ige.addComponent(RegionManager);
 
                     // Create the UI scene
@@ -326,22 +150,6 @@ var Client = IgeClass.extend({
                         .ignoreCamera(true)
                         .mount(self.rootScene);
 
-                    ige.mobileControls.attach(self.uiScene);
-
-                    if (typeof mode == 'string' && mode == 'sandbox') {
-                        self.vp2 = new IgeViewport()
-                            .id('vp2')
-                            .layer(100)
-                            .drawBounds(true)
-                            .height(0)
-                            .width(0)
-                            .borderColor('#0bcc38')
-                            .borderWidth(20)
-                            .bottom(0)
-                            .right(0)
-                            .scene(self.tilesheetScene)
-                            .mount(ige);
-                    }
                     self.vp1 = new IgeViewport()
                         .id('vp1')
                         .autoSize(true)
@@ -351,26 +159,15 @@ var Client = IgeClass.extend({
 
                     ige._selectedViewport = self.vp1;
 
-                    if (typeof mode == 'string' && mode == 'sandbox') {
-                        self.vp1.addComponent(MapPanComponent)
-                            .mapPan.enabled(true);
+                    console.log("all scenes loaded")
 
-                        self.vp2.addComponent(MapPanComponent)
-                            .mapPan.enabled(true);
-
-                        ige.client.vp2.drawBounds(true);
-                        ige.client.vp1.drawBounds(true)
-                    }
-
-                    console.log("igeEngine Started")
-
-                    self.igeEngineStarted.resolve();
+                    self.scenesLoaded.resolve();
                 }
             });
         });
     },
 
-    loadGameTextures: function () {
+    loadTextures: function () {
         return new Promise(function (resolve, reject) {
             var version = 1;
             var resource = ige.pixi.loader;
@@ -428,16 +225,8 @@ var Client = IgeClass.extend({
             zoom *= 0.75; // visible area less 25%
         }
 
-        // var viewPort = ige.client.vp1;
-
-        // viewPort.minimumVisibleArea(zoom, zoom); // alters viewport camera scale
         ige.pixi.zoom(zoom);
         // prevent camera moving outside of map bounds
-        // var mapHeight = ige.game.data.map.height * ige.game.data.map.tileheight;
-        // var mapWidth = ige.game.data.map.width * ige.game.data.map.tilewidth;
-        //console.log('map height ',mapHeight,' width ',mapWidth);
-        // var viewArea = viewPort.viewArea();
-        //console.log('viewArea:',viewArea);
         // var buffer = 0;
         if (ige.client.resolutionQuality === 'low') {
             viewArea.width = viewArea.width * 0.5;
@@ -446,16 +235,31 @@ var Client = IgeClass.extend({
 
     },
 
-    initEngine: function () {
+    loadGame: function () {
         var self = this;
+        var gameJsonLoaded;
+        
+        ige.addComponent(IgeInitPixi);
+        ige.addComponent(IgeNetIoComponent);
+        ige.addComponent(SoundComponent);
+        ige.addComponent(MapComponent);
+        ige.addComponent(MenuUiComponent);
+        ige.addComponent(TradeUiComponent);
+        ige.addComponent(MobileControlsComponent);
+        
+        if (ige.game.config.minimapEnabled) {
+            self.minimapScene = new IgeScene2d().id('minimapScene').drawBounds(false);
+            ige.addComponent(MiniMapComponent)
+            ige.addComponent(MiniMapUnit);
+        }
+        
+        // decide on whether to load game from modd.io or from the local game.json file
+        if (ige.game.config.gameId) {
+            gameJsonLoaded = new Promise(function (resolve, reject) {
 
-        var promise;
-        if (self.server.gameId) {
-            promise = new Promise(function (resolve, reject) {
-
-                $.when(self.igeEngineStarted).done(function () {
+                $.when(self.scenesLoaded).done(function () {
                     $.ajax({
-                        url: self.host + '/api/game-client/' + self.server.gameId,
+                        url: "https://beta.modd.io/api/game-client/" + ige.game.config.gameId,
                         dataType: "json",
                         type: 'GET',
                         success: function (game) {
@@ -466,7 +270,7 @@ var Client = IgeClass.extend({
                 })
             })
         } else {
-            promise = new Promise(function (resolve, reject) {
+            gameJsonLoaded = new Promise(function (resolve, reject) {
                 $.ajax({
                     url: '/src/game.json',
                     dataType: "json",
@@ -485,9 +289,9 @@ var Client = IgeClass.extend({
                 })
             })
         }
-        promise.then(function (game) {
-            var params = ige.client.getUrlVars();
 
+
+        gameJsonLoaded.then(function (game) {
             if (!game.data.isDeveloper) {
                 game.data.isDeveloper = window.isStandalone;
             }
@@ -514,16 +318,15 @@ var Client = IgeClass.extend({
 
             ige.menuUi.clipImageForShop();
             ige.scaleMap(game.data.map);
-            ige.client.loadGameTextures()
+            ige.client.loadTextures()
                 .then(() => {
                     ige.map.load(ige.game.data.map);
                 });
 
-            if (mode === 'play' && ige.game.data.defaultData.enableMiniMap) {
+            if (ige.game.config.minimapEnabled) {
                 $('#leaderboard').css({
                     top: '190px'
                 })
-                self.miniMapEnabled = true;
                 ige.miniMap.updateMiniMap();
             }
 
@@ -537,7 +340,7 @@ var Client = IgeClass.extend({
             ige.menuUi.toggleLeaderBoard();
 
             if (ige.game.data.isDeveloper) {
-                ige.addComponent(DevConsoleComponent);
+                // ige.addComponent(DevConsoleComponent);
             }
 
             // center camera while loading
@@ -564,15 +367,13 @@ var Client = IgeClass.extend({
                 self.setZoom(zoom);
 
                 ige.addComponent(TimerComponent);
-
                 ige.addComponent(ThemeComponent);
                 ige.addComponent(PlayerUiComponent);
                 ige.addComponent(UnitUiComponent);
                 ige.addComponent(ItemUiComponent);
                 ige.addComponent(ScoreboardComponent);
-
                 ige.addComponent(ShopComponent); // game data is needed to populate shop
-                if (ige.game.data.defaultData.enableMiniMap) {
+                if (ige.game.config.minimapEnabled) {
                     ige.miniMap.createMiniMap();
                 }
                 // if (ige.game.data.settings.shop && ige.game.data.settings.shop.isEnabled) {
@@ -590,21 +391,27 @@ var Client = IgeClass.extend({
                 $('.modal-videochat-backdrop, .modal-videochat').removeClass('d-none');
                 $('.modal-videochat').show();
                 $(".modal-step-link[data-step=2]").click();
-
-                if (self.preSelectedServerId && self.serverFound && params.joinGame === 'true' && userId) {
-                    self.connectToServer();
-                }
             }); // map loaded
         })
     },
 
-    connectToServer: function (url) {
+    connectToServer: function () {
 
-        ige.network.start(ige.client.server, function (data) {
+        let servers = ige.game.config.servers;
+        let server = servers[0];
+        if (SSL) {
+            var protocol = 'wss://'
+        } else {
+            var protocol = 'ws://'
+        }
+
+        let url = protocol + server.ip + ":" + server.port;
+
+        ige.network.start(url, function (data) {
 
             $('#loading-container').addClass('slider-out');
 
-            console.log("connected to", ige.client.server.url, "clientId", ige.network.id());
+            console.log("connected to", server, "clientId", ige.network.id());
             ige.client.defineNetworkEvents();
 
             ige.network.send('igeChatJoinRoom', "1");
@@ -617,7 +424,6 @@ var Client = IgeClass.extend({
 
             var sendInterval = ige.game.data.settings.latency || (ige._fpsRate > 0) ? 1000 / ige._fpsRate : 70;
 
-            //console.log('renderLatency:',renderLatency);
             // check for all of the existing entities in the game
             ige.network.addComponent(IgeStreamComponent)
             ige.network.stream.renderLatency(50) // Render the simulation renderLatency milliseconds in the past
@@ -635,9 +441,12 @@ var Client = IgeClass.extend({
                         if (ownerPlayer) {
                             unit.setOwnerPlayer(unit._stats.ownerId, { dontUpdateName: true });
                         }
+                        
+                        if (ownerPlayer == ige.client.myPlayer) {
+                            unit.renderMobileControl();
+                            ige.mobileControls.attach(self.uiScene);
+                        }
                     }
-                    unit.renderMobileControl();
-                    // avoid race condition for item mounting
                 }
                 else if (entity._category == 'player') {
                     // apply skin to all units that's owned by this player
@@ -665,41 +474,21 @@ var Client = IgeClass.extend({
                                 unit.equipSkin();
                             }
                         }
-
-                        if (ige.game.data.isDeveloper || (ige.client.myPlayer && ige.client.myPlayer._stats.isUserMod)) {
-                            ige.menuUi.kickPlayerFromGame();
-                        }
                     }
                 }
             });
 
-            ige.network.stream.on('entityDestroyed', function (unitBeingDestroyed) {
-
-                if (unitBeingDestroyed._category == 'unit') {
-                    unitBeingDestroyed.remove();
-                }
-
-                if ((ige.game.data.isDeveloper || (ige.client.myPlayer && ige.client.myPlayer._stats.isUserMod)) && unitBeingDestroyed._category === 'player') {
-                    ige.menuUi.kickPlayerFromGame(unitBeingDestroyed.id())
+            ige.network.stream.on('entityDestroyed', function (entity) {
+                if (entity._category == 'unit') {
+                    entity.remove();
                 }
             });
-
-            var params = ige.client.getUrlVars()
 
             ige.game.start();
             ige.menuUi.playGame();
 
-            if (params.joinGame == 'true' || params.guestmode == 'on') {
-                // hide menu and skin shop button
-                if (params.guestmode == 'on') {
-                    ige.client.guestmode = true;
-                    $('.open-menu-button').hide();
-                    $('.open-modd-shop-button').hide();
-                }
-            }
-            if (window.isStandalone) {
-                $('#toggle-dev-panels').show();
-            }
+            // $('#toggle-dev-panels').show();
+        
         });
     },
 
@@ -717,9 +506,6 @@ var Client = IgeClass.extend({
         ige.addComponent(ScriptComponent);
         ige.addComponent(ConditionComponent);
         ige.addComponent(ActionComponent);
-        if (typeof mode === 'string' && mode === 'sandbox') {
-            ige.script.runScript('initialize', {});
-        }
         
     },
 
@@ -729,50 +515,35 @@ var Client = IgeClass.extend({
         ige.network.define('makePlayerSelectUnit', self._onMakePlayerSelectUnit);
         ige.network.define('makePlayerCameraTrackUnit', self._onMakePlayerCameraTrackUnit);
         ige.network.define('changePlayerCameraPanSpeed', self._onChangePlayerCameraPanSpeed);
-
         ige.network.define('hideUnitFromPlayer', self._onHideUnitFromPlayer);
         ige.network.define('showUnitFromPlayer', self._onShowUnitFromPlayer);
         ige.network.define('hideUnitNameLabelFromPlayer', self._onHideUnitNameLabelFromPlayer);
         ige.network.define('showUnitNameLabelFromPlayer', self._onShowUnitNameLabelFromPlayer);
-
         ige.network.define('updateAllEntities', self._onUpdateAllEntities);
         ige.network.define('teleport', self._onTeleport);
-
         ige.network.define('updateEntityAttribute', self._onUpdateEntityAttribute);
-
         ige.network.define('updateUiText', self._onUpdateUiText);
         ige.network.define('updateUiTextForTime', self._onUpdateUiTextForTime);
-
         ige.network.define('alertHighscore', self._onAlertHighscore);
-
         ige.network.define('item', self._onItem);
-
         ige.network.define('clientDisconnect', self._onClientDisconnect);
-
         ige.network.define('ui', self._onUi);
         ige.network.define('playAd', self._onPlayAd);
         ige.network.define('buySkin', self._onBuySkin);
         ige.network.define('videoChat', self._onVideoChat);
-
         ige.network.define('devLogs', self._onDevLogs);
         ige.network.define('errorLogs', self._onErrorLogs);
-
         ige.network.define('sound', self._onSound);
         ige.network.define('particle', self._onParticle);
         ige.network.define('camera', self._onCamera);
-
         ige.network.define('gameSuggestion', self._onGameSuggestion);
         ige.network.define('minimap', self._onMinimapEvent);
-
         ige.network.define('createFloatingText', self._onCreateFloatingText)
-
         ige.network.define('openShop', self._onOpenShop);
         ige.network.define('openDialogue', self._onOpenDialogue);
         ige.network.define('closeDialogue', self._onCloseDialogue);
-
         ige.network.define('setOwner', self._setOwner);
         ige.network.define('userJoinedGame', self._onUserJoinedGame);
-
         ige.network.define('trade', self._onTrade);
     },
 
@@ -879,22 +650,6 @@ var Client = IgeClass.extend({
             //     $('#event-logs-modal').modal('show');
             // }, 12000);
         }
-    },
-
-    getUrlVars: function () {
-
-        // edited for play/:gameId
-        var tempGameId = window.location.pathname.split('/')[2];
-        var vars = {
-            gameId: tempGameId
-        };
-
-        //if serverId is present then add it to vars
-        window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
-            vars[key] = value;
-        });
-
-        return vars;
     },
 
     applyInactiveTabEntityStream: function () {

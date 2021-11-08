@@ -10,7 +10,7 @@ var RegionUi = IgeEntity.extend({
 
 		self.category('regionUi');
 
-		if ((mode === 'play' && (region.default.inside || region.default.outside)) || mode === 'sandbox') {
+		if ((mode === 'play' && (region.default.inside || region.default.outside))) {
 			var graphic = new PIXI.Graphics();
 			// graphic.lineStyle(3, 0x000000, 0.7);
 			graphic.beginFill(0xFF0000, 0.4);

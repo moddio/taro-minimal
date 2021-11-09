@@ -215,9 +215,13 @@ var Server = IgeClass.extend({
 		// Start the network server
 		ige.network.start(self.gameServerPort, function (data) {			
 			var promise;			
-			if (process.env.game) {
-				console.log(`loading the game data from modd.io at https://www.modd.io/api/game-client/${process.env.game}`)
-				var gameUrl = `https://www.modd.io/api/game-client/${process.env.game}/?source=gs`;
+
+			ige.addComponent(GameComponent);
+			ige.game.config = JSON.parse(fs.readFileSync('src/config.json', 'utf8'));
+			
+			if (ige.game.config.gameId) {
+				console.log(`loading the game data from modd.io at https://www.modd.io/api/game-client/${ige.game.config.gameId}`)
+				var gameUrl = `https://www.modd.io/api/game-client/${ige.game.config.gameId}/?source=gs`;
 				promise = self.loadGameJSON(gameUrl);
 			} else {
 				console.log('loading the game data from game.json file')
@@ -237,10 +241,9 @@ var Server = IgeClass.extend({
 			}
 
 			promise.then((game) => {
-				ige.addComponent(GameComponent);
-				console.log("loading config.json");
-				ige.game.config = JSON.parse(fs.readFileSync('src/config.json', 'utf8'));
-				console.log("game name:", ige.game.config.name)
+				
+				console.log("loading config.json");			
+				console.log("Game name:", game.data.title)
 
 				self.gameStartedAt = new Date();
 				ige.game.data = game.data;

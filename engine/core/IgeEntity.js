@@ -643,7 +643,7 @@ var IgeEntity = IgeObject.extend({
 	},
 	
 	createPixiTexture: function (defaultSprite = 0, defaultData) {
-		var texture = new IgePixiTexture(this._stats.cellSheet.url, this._stats.cellSheet.columnCount, this._stats.cellSheet.rowCount, this);
+		var texture = new IgePixiTexture(this._stats.cellSheet.url, this._stats.cellSheet.columnCount, this._stats.cellSheet.rowCount, this);		
 		texture = texture.spriteFromCellSheet(defaultSprite);
 		if (!texture) {
 			return;

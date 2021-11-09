@@ -47,6 +47,7 @@ var Unit = IgeEntityBox2d.extend({
 				flip: data.flip == undefined ? 0 : data.flip
 			}
 		);
+		
 		self.entityId = entityIdFromServer;
 
 		// dont save variables in _stats as _stats is stringified and synced

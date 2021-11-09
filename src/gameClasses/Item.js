@@ -720,7 +720,7 @@ var Item = IgeEntityBox2d.extend({
 	 * get item's position based on its itemAnchor, unitAnchor, and current rotation value.
 	 * @param {int} froceRedraw offsets item's rotation. used for tweening item that's not anchored at 0,0. e.g. swinging a sword.
 	 */
-	getAnchoredOffset: function (rotate) {
+	getAnchoredOffset: function (itemAngle) {
 		var self = this;
 		var offset = { x: 0, y: 0, rotate: 0 };
 		var ownerUnit = this.getOwnerUnit();
@@ -728,9 +728,7 @@ var Item = IgeEntityBox2d.extend({
 		if (ownerUnit && this._stats.stateId != 'dropped') {
 			// place item correctly based on its owner's transformation & its body's offsets.
 			if (self._stats.currentBody) {
-				if (self._stats.currentBody.fixedRotation) {
-					rotate = ownerUnit._rotate.z;
-				}
+				var unitAngle = ownerUnit._rotate.z;
 
 				// get translation offset based on unitAnchor
 				if (self._stats.currentBody.unitAnchor) {
@@ -747,24 +745,24 @@ var Item = IgeEntityBox2d.extend({
 					// item is flipped, then mirror the rotation
 					if (ownerUnit._stats.flip == 1) {
 						var unitAnchorOffsetX = -self._stats.currentBody.unitAnchor.x || 0;
-						rotate -= unitAnchorOffsetRotate;
+						unitAngle -= unitAnchorOffsetRotate;
 					} else {
 						var unitAnchorOffsetX = self._stats.currentBody.unitAnchor.x || 0;
-						rotate += unitAnchorOffsetRotate;
+						unitAngle += unitAnchorOffsetRotate;
 					}
 
 					var unitAnchoredPosition = {
-						x: (unitAnchorOffsetX * Math.cos(rotate)) + (unitAnchorOffsetY * Math.sin(rotate)),
-						y: (unitAnchorOffsetX * Math.sin(rotate)) - (unitAnchorOffsetY * Math.cos(rotate))
+						x: (unitAnchorOffsetX * Math.cos(unitAngle)) + (unitAnchorOffsetY * Math.sin(unitAngle)),
+						y: (unitAnchorOffsetX * Math.sin(unitAngle)) - (unitAnchorOffsetY * Math.cos(unitAngle))
 					};
 
 					// get translation offset based on itemAnchor
 					var itemAnchorOffsetX = self._stats.currentBody.itemAnchor && self._stats.currentBody.itemAnchor.x || 0;
 					var itemAnchorOffsetY = self._stats.currentBody.itemAnchor && self._stats.currentBody.itemAnchor.y || 0;
 
-					offset.x = (unitAnchoredPosition.x) + (itemAnchorOffsetX * Math.cos(rotate)) + (itemAnchorOffsetY * Math.sin(rotate)),
-					offset.y = (unitAnchoredPosition.y) + (itemAnchorOffsetX * Math.sin(rotate)) - (itemAnchorOffsetY * Math.cos(rotate));
-					offset.rotate = rotate;
+					offset.x = (unitAnchoredPosition.x) + (itemAnchorOffsetX * Math.cos(itemAngle)) + (itemAnchorOffsetY * Math.sin(itemAngle)),
+					offset.y = (unitAnchoredPosition.y) + (itemAnchorOffsetX * Math.sin(itemAngle)) - (itemAnchorOffsetY * Math.cos(itemAngle));
+					offset.rotate = itemAngle;
 				}
 			}
 		}

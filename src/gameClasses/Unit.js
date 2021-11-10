@@ -1825,7 +1825,7 @@ var Unit = IgeEntityBox2d.extend({
 		}
 
 		// if entity (unit/item/player/projectile) has attribute, run regenerate
-		if (ige.isServer || (ige.physics && ige.isClient && ige.client.selectedUnit == this && ige.game.cspEnabled)) {
+		if (ige.isServer || (ige.physics && ige.isClient && ige.client.selectedUnit == this && ige.game.config.clientSidePredictionEnabled)) {
 			if (this._stats.buffs && this._stats.buffs.length > 0) {
 				for (let i = 0; i < this._stats.buffs.length; i++) {
 					var buff = this._stats.buffs[i];

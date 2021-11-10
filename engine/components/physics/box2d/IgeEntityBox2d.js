@@ -12,7 +12,6 @@ var IgeEntityBox2d = IgeEntity.extend({
 
 		if (ige.isClient) {
 			self.addComponent(IgeAnimationComponent);
-			// don't create body on clientside if CSP is disabled
 		}
 
 		// Check if box2d is enabled in the engine
@@ -58,8 +57,6 @@ var IgeEntityBox2d = IgeEntity.extend({
 
 	updateBody: function (defaultData, isLossTolerant) {
 		var self = this;
-
-		// console.log("updatebody", defaultData, this._stats.currentBody.type)
 
 		body = this._stats.currentBody;
 		if (!body) {
@@ -175,6 +172,7 @@ var IgeEntityBox2d = IgeEntity.extend({
 				}
 			}
 		}
+
 	},
 
 	/**

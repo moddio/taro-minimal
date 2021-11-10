@@ -633,38 +633,6 @@ var Item = IgeEntityBox2d.extend({
 		}
 	},
 
-	// check if item can reach the target unit
-	// canReachTarget: function(targetUnit) {
-	// 	var self = this;
-	// 	var owner = this.getOwnerUnit();
-	// 	if (owner && targetUnit && self._stats.type == 'weapon') {
-	// 		var positionA = owner._translate;
-	// 		var positionB = targetUnit._translate;
-	// 		if (positionA && positionB) {
-	// 			var distanceX = Math.abs(positionA.x - positionB.x) - owner.width()/2 - targetUnit.width()/2;
-	// 			var distanceY = Math.abs(positionA.y - positionB.y) - owner.height()/2 - targetUnit.height()/2;
-	// 			var reach = 0;
-	// 			if (self._stats.isGun) {
-	// 				var velocity = self._stats.bulletForce;
-	// 				var bulletLifespan = self.projectileData.lifeSpan
-	// 				reach = velocity * bulletLifespan / ige._fpsRate / 4;
-	// 				// console.log(velocity, bulletLifespan, reach)
-	// 			} else {
-	// 				var hitboxData = this._stats.damageHitBox;
-	// 				if (hitboxData) {
-	// 					reach = hitboxData.offsetY
-	// 				}
-	// 			}
-
-	// 			if (reach > distanceX && reach > distanceY) {
-	// 				return true;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	return false;
-	// },
-
 	startUsing: function () {
 		var self = this;
 

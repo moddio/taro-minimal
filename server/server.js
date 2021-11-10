@@ -247,7 +247,7 @@ var Server = IgeClass.extend({
 
 				self.gameStartedAt = new Date();
 				ige.game.data = game.data;
-				ige.game.cspEnabled = !!ige.game.data.defaultData.clientSidePredictionEnabled;
+				ige.game.config.clientSidePredictionEnabled = !!ige.game.data.defaultData.clientSidePredictionEnabled;
 
 				var baseTilesize = 64;
 

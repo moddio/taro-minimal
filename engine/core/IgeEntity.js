@@ -65,7 +65,6 @@ var IgeEntity = IgeObject.extend({
 		// this ensures entity is spawning at a correct position initially. particularily useful for projectiles
 
 		this._keyFrames = [];
-		this.movementHistory = [];
 		this.prevKeyFrame = [ige.now, [this._translate.x, this._translate.y, this._rotate.z]];
 		this._lastTransformAt = null;
 		this.nextPhysicsFrame = null;
@@ -3212,7 +3211,6 @@ var IgeEntity = IgeObject.extend({
 			this.lastServerStreamedPosition = undefined;
 			this.prevPhysicsFrame = undefined;
 			this.nextPhysicsFrame = undefined;
-			this.movementHistory = [];
 			if (this.body) {
 				this.body.setPosition({ x: x / this._b2dRef._scaleRatio, y: y / this._b2dRef._scaleRatio });
 				if (rotate != undefined) {

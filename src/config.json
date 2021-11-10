@@ -1,7 +1,8 @@
 {
-    "gameId": "613fce37ff9f6f357e2ff75d",
+    "gameId": null,
     "name": "test game",
     "minimapEnabled": false,
+    "clientSidePredictionEnabled": true,
     "servers": [
         {
             "ip": "127.0.0.1",

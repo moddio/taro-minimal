@@ -94,7 +94,6 @@ var Projectile = IgeEntityBox2d.extend({
 			// self.addComponent(AttributeBarsContainerComponent);
 			self.updateLayer();
 			self.updateTexture();
-			self.mouseEvents();
 			self.mount(ige.pixi.world);
 		}
 		this.playEffect('create');

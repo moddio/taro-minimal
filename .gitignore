@@ -9,6 +9,7 @@ commands
 .circleci/
 deployment/
 sslcert/
+src/config.json
 
 # Logs
 logs

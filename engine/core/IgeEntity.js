@@ -5157,9 +5157,9 @@ var IgeEntity = IgeObject.extend({
 			// don't set lastServerStreamedPosition unless more than 500ms has passed since last teleport.
 			// this prevents teleported position data getting overwritten by latest streamed snapshot
 			// console.log("this.lastReconciledAt != prevKeyFrame[0]", this.lastReconciledAt, prevKeyFrame[0])
-			if (this == ige.client.selectedUnit && this.lastReconciledAt != prevKeyFrame[0]) {
-				this.lastServerStreamedPosition = [targetX, targetY, targetRotate];
-			}
+			// if (this == ige.client.selectedUnit && this.lastReconciledAt != prevKeyFrame[0]) {
+			// 	this.lastServerStreamedPosition = [targetX, targetY, targetRotate];
+			// }
 
 			// apply rubberbanding to all non-player entities when csp is enabled
 			if (ige.physics && ige.game.cspEnabled && this != ige.client.selectedUnit) {
